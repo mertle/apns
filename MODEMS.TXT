@@ -1,303 +1,666 @@
 APNS Standard
-ATZ|~~~ATS0=0V1X4&C1&D2|
+ATZ|~~~AT&C1&D2|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
 AST Premium Exec Modem 2400
 ATS0=0Q0V1X4&C1&D2|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
 AT&T Paradyne COMSPHERE 3800
 ATS0=0Q0V1X6&C1&D2|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
 AT&T V32F-V42L Modem Chipset
 ATS0=0Q0V1X4&C1&D2&S1W1\A3|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
 AT&T V32x-V42D Modem Chipset
 ATS0=0Q0V1X4&C1&D2&S1W\A3S95=45|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
 Accex External 9600
 ATZ|~~~AT&C1&D2B0&G1|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
 Codex 2264/2266
-ATS0=0QV1X4&C1&D2&S1*XC1|
+AT&FV1Q0|~~AT&C1&D2*FL3*XC1*PT0&R0|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
-CompuCom Champ / Combo
+CompuCom Champ MKII
 ATS0=0Q0V1X4&C1&D2\V1\A3|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
+
+CompuCom Combo
+ATS0=0Q0V1X4&C1&D2\V1\A3|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
+
+CompuCom Combo MKII
+ATS0=0Q0V1X4&C1&D2\V1\A3|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
+
+CompuCom Speedmodem CSP
+AT&F2V1Q0|~~AT&C1&D3*H2|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
 Dallas Fax 14.4 Nova
 ATS0=0Q0V1X4&C1&D2&S1W\A3S95=45|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
 Dallas Fax 14.4 Pro Plus
 ATS=QV1X4&C1&D2S95=2W1&K3S36=7S95=255|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
-Dallas Fax 2496
+Dallas Fax 2496 External
 ATS0=0Q0V1X4&C1&D2|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
-Dallas Fax 2496V
+Dallas Fax 2496 Internal
+ATS0=0Q0V1X4&C1&D2|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
+
+Dallas Fax 2496V External
 ATS=QV1X4&C1&D2&K3S36=7\V1W1|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
+
+Dallas Fax 2496V Internal
+ATS=QV1X4&C1&D2&K3S36=7\V1W1|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
 Dallas Fax 2496V Pocket
 ATS0=0Q0V1X4&C1&D2\V1\A3|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
 Dallas Fax 9696 Nova
 ATS0=0Q0V1X4&C1&D2&S1W\A3S95=45|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
 Dallas Fax 9696 Pro
 ATS=QV1X4&C1&D3S95=2W1&K3S36=7S95=255|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
 Dallas Fax 9696P Pocket
 ATS0=0Q0V1X4&C1&D2&S1W1\A3|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
 Dell 2400+
 ATS=QV1X4&C1&D2&S1\V1\A3|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
-Dell 2400i / DS-24
+Dell 2400i
 ATS0=0Q0V1X4&C1&D2|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
+
+Dell DS-24
+ATS0=0Q0V1X4&C1&D2|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
 Dell DS92M
 ATS0=0Q0V1X4&C1&D2\V1\A3|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
 Dell Data/FAX 24/96L
 ATS0=0Q0V1X4&C1&D2|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
 Dell Data/FAX 24/96M
 ATS=QV1X4&C1&D2&S1&K3S59=1\V1W1|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
 Dell Data/FAX 24/96V
 ATS0=0Q0V1X4&C1&D2&S1W1\V1\A3|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
 Dell Data/FAX 96/96V
 ATS0=0Q0V1X4&C1&D2&S1W1\V2\A3|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
 Dell Precision 2400B Modem
 ATS0=0Q0V1X4&C1&D2&S1|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
 Dell Precision 2496 FAX Modem
 ATS0=0Q0V1X4&C1&D2|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
 Everex EverFax 24/96
 ATS0=0Q0V1X4&C1&D2\V1|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
 GVC Super Modem 2400
 ATS0=0Q0V1X4&C1&D2|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
 GVC Super Modem 2400MNP
 ATS0=0Q0V1X4&C1&D2\V1\A3|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
-Hayes Personal Modem 1200 / 2400
+Hayes Compatible
 ATS0=0Q0V1X4&C1&D2|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
+
+Hayes Personal Modem 1200
+ATS0=0Q0V1X4&C1&D2|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
+
+Hayes Personal Modem 2400
+ATS0=0Q0V1X4&C1&D2|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
 Hayes Smartmodem 1200
 ATS0=0Q0V1X1|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
 Hayes Smartmodem 2400
 ATS0=0Q0V1X4&C1&D2&S1|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
 Hayes Smartmodem 2400B
 ATS0=0Q0V1X4&C1&D2|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
 Hayes Ultra 96
 ATS=QV1X4&C1&D2&S1S95=2W&K3S36=7|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
 Intel 14.4EX
 ATS0=0Q0V1X4&C1&D2&S1\V2\A3|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
+
+Intel 2400EX / 2400B
+AT&FV1Q0|~~AT\Q3\N3\J0\V1\C1S11=60|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
 Intel 2400EX MNP
 ATS0=0Q0V1X4&C1&D2&S1\V1\A3|
-
-Intel 2400EX and 2400B
-ATS0=0Q0V1X4&C1&D2&S1|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
 Intel 89C124FX
 ATS0=0Q0V1X4&C1&D2\V1\A3|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
 Intel 9600EX
-ATS0=0Q0V1X4&C1&D2&S1\V2\A3|
+AT&FV1Q0|~~AT \Q3\N3\J0\V1\C1S11=60|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
 Intel Connect CoProcessor
 ATS0=0Q0V1X4&C1&D2&S1|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
 Intel SatisFAXtion
 ATS0=0Q0V1X4&C1&D2&S1\V1\A3|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
 Kortex 2400
 ATZ|~~~AT&C1\G0\Q0\C0&I0|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
 Kortex 9600
 AT&F|~~~ATS0=0X6E0&D2S7=60SK08=1SK09=0|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
 LightCom 144F
-ATS0=0V1X4&C1&D2&K3|
+AT&F|~~~AT&C1&D2|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
 LightCom 96F
-ATS0=0V1X4&C1&D2&K3|
+AT&F|~~~V1X4&C1&D2&K3|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
 Migent Pocket Modem 1200
 ATS0=0Q0V1X4&C1&D1|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
 MultiTech MT224BAF
 ATS=QV1X4&C1&D2&S1S95=2W&K3S36=7S95=255|
-
-MultiTech MultiModem II MT1432
-ATS0=0Q0V1X4&C1&D2&E4|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
 MultiTech MultiModem V32B
 ATS0=0Q0V1X4&C1&D2&E4|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
+
+MultiTech MultiModemII MT1432
+ATS0=0Q0V1X4&C1&D2&E4|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
 NEC N2431
 ATS0=0Q0V1X4&C1&D2&E1|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
 NEC N9635E
 ATS0=0Q0V1X4&C1&D2&S1\V1\A3|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
 PNB Rio 9600
 AT&F|~~~ATE0Q0V1L5\Q3N0&C1&D2|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
 Penril 2332
 ATS0=0Q0V1X4&C1&D2&S1\V1\Q1|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
 Rockwell RC144AC
 ATS=QV1X4&C1&D2S95=2W1&K3S36=7s95=255|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
 Rockwell RC224ATF
 ATS0=0Q0V1X4&C1&D2+H1|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
 Rockwell RC9624AC
 ATS=QV1X4&C1&D2&S1S95=2W&K3S36=7|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
 Rockwell RC96AC
 ATS=QV1X4&C1&D2S95=2W1&K3S36=7s95=255|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
 Sierra 4800 Sendfax
 ATS0=0Q0V1X4&C1&D2|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
 Sierra 9600 FullFax
 ATS0=0Q0V1X4&C1&D2|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
 Sierra 9600 Sendfax
 ATS0=0Q0V1X4&C1&D2|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
 SupraModem 2400
-ATS0=0Q0V1X4&C1&D2&S1|
+ATE1Q0V1X4&C1&D2S7=55S11=60S0=0|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
-TwinCom 24/96
+TWINCOM 24/96
 ATS0=0Q0V1X4&C1&D2|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
 Telebit QBlazer
 ATS0=0Q0V1X4&C1&D2S58=2S59=1S68=255|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
 Telebit T1000
 ATS0=0Q0V1X2&C1&D2&K3&S1&Q|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
-Telebit TrailBlazer Plus
+Telebit TrailBlazerPlus
 ATS=QV1X2S66=1S58=2S68=2S53=1S95=S52=1|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
 Toshiba T24A
 ATS0=0Q0V1X4&C1&D2|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
 Toshiba T24B
 ATS0=0Q0V1X4&C1&D2|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
 Toshiba T24C
 ATS0=0Q0V1X4&C1&D2|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
 Toshiba T24D
 ATS0=0Q0V1X4&C1&D2|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
 Touchbase WorldPort 1200
 ATS0=0Q0V1X4|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
 Touchbase WorldPort 2400
 ATS0=0Q0V1X4&C1&D2|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
 Touchbase WorldPort 2400MNP
 ATS0=0Q0V1X4&C1&D2\V1\A3|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
 Touchbase WorldPort 2496
 ATS0=0Q0V1X4&C1&D2|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
 Touchbase WorldPort 2496v
 ATS0=0Q0V1X4&C1&D2\V2\A3|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
 Touchbase WorldPort 9600
 ATS0=0Q0V1X4&C1&D2\V1\A3|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
+
+USRobotics Courier 1200
+ATS0=0Q0V1X4|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
 USRobotics Courier 2400
 ATS0=0Q0V1X4|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
 USRobotics HST
-ATS0=0Q0V1X4&A1&C1&D2|
+AT&FQ0|~~AT&K0X6&B1&H1&R2S7=55S11=60|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
 USRobotics HST Dual Std
-ATS0=0Q0V1X4&A1&C1&D2|
+AT&F|~~ATX6&B1&H1&R2S7=55S11=60|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
 USRobotics HST Dual Std/bis
-ATS0=0Q0V1X4&A3&C1&D2|
+AT&F|~~ATX6&K0&B1&H1&R2S7=55S11=60|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
 USRobotics HST V.32
 ATS0=0Q0V1X4&A1&C1&D2|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
 USRobotics WorldPort 9600 MNP5
 ATS0=0Q0V1X4&C1&D2\V1\A3|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
 Zoom AFC / AFX
 ATS0=0Q0V1X4&C1&D2+H1|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
 Zoom AMC / AMX
 ATS0=0Q0V1X4&C1&D2|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
 Zoom FC9624 / FX9624
 ATS0=0Q0V1X4&C1&D2|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
 Zoom FCV / FXV
 ATS=QV1X4&C1&D2&S1S95=2W&K3S36=7S95=255|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
 Zoom FaxModem VFPV32 Int
 ATS=QV1X4&C1&D2S95=2W1&K3S36=7s95=255|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
 Zoom FaxModem VFPV32bis Int
 ATS=QV1X4&C1&D2S95=2W1&K3S36=7s95=255|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
 Zoom FaxModem VFXV32 Ext
 ATS=QV1X4&C1&D2S95=2W1&K3S36=7s95=255|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
 Zoom FaxModem VFXV32bis Ext-AT
 ATS=QV1X4&C1&D2S95=2W1&K3S36=7s95=255|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
 Zoom FaxModem VFXV32bis Ext-PC
 ATS=QV1X4&C1&D2S95=2W1&K3S36=7s95=255|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
 Zoom MX 2400S SendFax
 ATS0=0Q0V1X4&C1&D2|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
 Zoom Pocket Modem
 ATS0=0Q0V1X4&C1&D2+H1|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
 Zoom/Modem MX 2400
 ATS0=0Q0V1X4&C1&D2|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
 Zoom/Modem MX 2400R
 ATS0=0Q0V1X4&C1&D2|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
 Zoom/Modem SRFax 9600
 ATS0=0Q0V1X4&C1&D2|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
 Zoom/Modem V.32turbo
 ATS=QV1X4&C1&D2&S1S95=47W&K3S36=7|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
 Zoom/Modem V.42bis 2400
 ATS=QV1X4&C1&D2&S1S95=47W&K3S36=7|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
 Zoom/Modem VPV32 Int
 ATS=QV1X4&C1&D2S95=2W1&K3S36=7s95=255|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
 Zoom/Modem VPV32bis Int
 ATS=QV1X4&C1&D2S95=2W1&K3S36=7s95=255|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
 Zoom/Modem VXV32 Ext
 ATS=QV1X4&C1&D2S95=2W1&K3S36=7s95=255|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
 Zoom/Modem VXV32bis Ext-AT
 ATS=QV1X4&C1&D2S95=2W1&K3S36=7s95=255|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 
 Zoom/Modem VXV32bis Ext-PC
 ATS=QV1X4&C1&D2S95=2W1&K3S36=7s95=255|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
+
+Zyxel U-1496
+AT&F|~~ATX6&H3&K4&C1&D2|
+~~~+++~~~ATH0=1|
+ATDT
+ATS0=1|
 

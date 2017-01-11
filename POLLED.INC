@@ -1,6 +1,6 @@
 {This version and all that are comms-compatible with v2.15 must accept
- both IBM-packed and Unix format dates. The next non-comms-compatible
- version will use Unix-style dates only}
+ both IBM-packed and Unix2 format dates. The next non-comms-compatible
+ version will use Unix2-style dates only}
 
 function polled:result;
 
@@ -20,7 +20,7 @@ begin
 {Initialise what variables we can, not knowing who the caller is yet}
 
  polled:=fail;
- log('');
+ writeln(logfile);
 
  fillchar(mine,sizeof(mine),0);
  mine.sender:=setup.site;
@@ -77,9 +77,9 @@ begin
  end;
  
  polled:=partial;
- if handshake.unixvalid then unix2dos(handshake.unixtime+(setup.gmtdiff*60),dt)
+ if handshake.unixvalid=2 then unix2dos(handshake.unixtime+(setup.gmtdiff*60),dt)
   else unpacktime(handshake.ldate,dt);
- if ((handshake.unixvalid) or (handshake.timevalid)) and
+ if ((handshake.unixvalid=2) or (handshake.timevalid)) and
     (not setup.blockrtc) then begin
   setdate(dt.year,dt.month,dt.day);
   settime(dt.hour,dt.min,dt.sec,99);
@@ -123,8 +123,8 @@ begin
 
  findfirst(setup.updir+'\*.*',0,nextfile);
  while doserror=0 do begin
-  if (pos('-ALL',nextfile.name)=5) or (pos(handshake.sender,nextfile.name)=5)
-   then inc(mine.files);
+  if (pos(handshake.sender,nextfile.name)=5) or (pos('-ALL',nextfile.name)=5) or
+     (pos(sess,nextfile.name)=5) then inc(mine.files);
   findnext(nextfile);
  end;
 
@@ -158,8 +158,9 @@ begin
 
  findfirst(setup.updir+'\*.*',0,nextfile);
  for outer:=1 to mine.files do begin
-  while (pos('-ALL',nextfile.name)<>5) and
-        (pos(handshake.sender,nextfile.name)<>5) do findnext(nextfile);
+  while (pos(handshake.sender,nextfile.name)<>5) and 
+        (pos('-ALL',nextfile.name)<>5) and (pos(sess,nextfile.name)<>5)
+         do findnext(nextfile);
   transfer:=nextfile;
   times:=0;
   repeat

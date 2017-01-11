@@ -1,11 +1,5 @@
-type
- bufty=array [0..61439] of byte;
- bufptr=^bufty;
-
 var
- start:longint;
- buf:bufptr;
- bufpos,buflen,bufseg:word;
+ start:longint; 
  
 {**************************************************************************}
 
@@ -61,22 +55,6 @@ begin
  cps:=round(bytes/seconds);
  str(cps,s);
  thruput:=s+' cps';
-end;
-
-{**************************************************************************}
-
-procedure allocbuf;
-
-var
- size,temp:word;
-
-begin
- size:=mem_avail;
- if size>3840 then size:=3840;
- buflen:=size*16;
- bufpos:=0;
- bufseg:=mem_alloc(size);
- buf:=ptr(bufseg,0);
 end;
 
 {**************************************************************************}
@@ -156,9 +134,9 @@ begin
   for loop:=1 to sa do sendaux(opacket[loop]);
   for loop:=1 to 1024 do sendaux(buffer[loop]);
   
-  repeat
+  while not ((charwaiting) or (retries>9)) do begin
    if escpressed then retries:=10;
-  until charwaiting or (retries>9);
+  end;
   
   for loop:=1 to sa do ipacket[loop]:=auxtb(1000);
   
@@ -256,16 +234,15 @@ begin
   wait:=0;
   loop:=bufpos;
   repeat
-   if not charwaiting then begin
-    delay(10);
-    inc(wait);
-   end else wait:=0;
    while charwaiting do begin
     buf^[loop]:=getaux;
     inc(loop);
    end;
+   if not charwaiting then begin
+    delay(10);
+    inc(wait);
+   end else wait:=0;
   until (loop=bufpos+1024) or (escpressed) or (wait>100);
- {for loop:=bufpos to bufpos+1023 do buf^[loop]:=auxtb(1000);}
    
   my.crc:=my.blknum;
   crc16(my.crc,buf^[bufpos],1024);

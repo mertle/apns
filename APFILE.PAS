@@ -51,7 +51,7 @@ var
  nomem,getout,readnow:boolean;
  cfgname:string[128];
  c:char;
- fkey:byte;
+ fkey,reserve,maxsess:byte;
  pick:procedure(act:pickact;var s:string;var n:longint);
  pickletter:array ['A'..'Z'] of longint;
  time,date:string[10];
@@ -255,19 +255,46 @@ begin
  showfile:=temp;
 end;
 
+{**************************************************************************}
+
+procedure getresname(n:longint;var title:string;var site:string);
+
+var
+ temp:string;
+
+begin
+ if n=0 then begin
+  title:='All Sites in All Sessions';
+  site:='-ALL';
+ end else begin
+  title:='All Sites in Session '+itos(n,2);
+  site:='-S'+itos(n,2);
+ end;
+end;
+
 {*************************************************************************}
 
 procedure pickdial(act:pickact;var s:string;var n:longint); far;
 
+const
+ logipos:longint=0;
+
 begin
  s:='';
  case act of
-  seekto:seek(dialfile,n);
-  readrec:begin
+  seekto:begin
+          if n>=reserve then seek(dialfile,n-reserve) else seek(dialfile,0);
+          logipos:=n;
+         end;
+  readrec:if logipos>=reserve then begin
            read(dialfile,currsite);
            s:=currsite.name;
+          end else begin
+           getresname(logipos,s,currsite.site);
+           seek(dialfile,0);
+           inc(logipos);
           end;
-  retmax:n:=filesize(dialfile);
+  retmax:n:=filesize(dialfile)+reserve;
   else;
  end;
 end;
@@ -291,7 +318,7 @@ end;
 
 {*************************************************************************}
 
-procedure pickinit;
+procedure pickinit(res:byte);
 
 var
  max,loop,temp:longint;
@@ -299,11 +326,12 @@ var
  s:string;
 
 begin
+ reserve:=res;
  fillchar(pickletter,sizeof(pickletter),$FF);
  temp:=0;
  pick(seekto,s,temp);
  pick(retmax,s,max);
- for loop:=0 to pred(max) do begin
+ for loop:=reserve to pred(max)+reserve do begin
   pick(readrec,s,temp);
   c:=upcase(s[3]);
   if (pickletter[c]=-1) and (s[1]<>#255) then pickletter[c]:=loop;
@@ -494,6 +522,20 @@ end;
 
 {**************************************************************************}
 
+procedure setmaxsess;
+
+begin
+ maxsess:=0;
+ seek(dialfile,0);
+ while (not eof(dialfile)) and (maxsess<98) do begin
+  read(dialfile,currsite);
+  if currsite.session>maxsess then maxsess:=currsite.session;
+ end;
+ inc(maxsess,2);
+end;
+
+{**************************************************************************}
+
 procedure finddrives(fl:flptr;var files:word);
 
 var
@@ -644,7 +686,8 @@ begin
   rewrite(dialfile);
   reset(dialfile);
  end;
- pickinit;
+ setmaxsess;
+ pickinit(maxsess);
  last:=filesize(dialfile);
  getasite:='';
  if last>0 then begin
@@ -868,7 +911,8 @@ begin
  getdir(0,startupdir);
  currentdir:=startupdir;
  sortmode:=fname;
-
+ filemode:=66;
+ 
  lhastr:=fexpand(fsearch('LHA.EXE',startupdir+';'+getenv('PATH')));
 
  getout:=false;
@@ -895,7 +939,7 @@ begin
   dirs:=files2;
   inc(files2,files1);
 
-  pickinit;
+  pickinit(0);
   title:=currentdir;
   while length(title)>30 do delete(title,1,1);
   picked:=succ(picklist(title));
@@ -909,7 +953,7 @@ begin
       else route(sr.name,'');
      end;
    2:begin
-      if (sr.attr=directory) and (tags=0) then 
+      if (sr.attr=directory) and (tags=0) then
        winmsg('Error','You cannot route a directory')
       else route(sr.name,'-ALL');
      end;

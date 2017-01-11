@@ -17,7 +17,13 @@ const
 {$I runerr.inc}
 {$I unixtime.inc}
 
-var
+type
+ bufty=array [0..61439] of byte;
+ bufptr=^bufty;
+
+var 
+ buf:bufptr;
+ bufpos,buflen,bufseg:word;
  exitsave:pointer;               {points to termination routine}
  save:screen;
  s,laststr:string;
@@ -58,7 +64,7 @@ var
 
  oldx,oldy:byte;                 {window stuff}
 
- ccloaded,pcloaded,boo:boolean;
+ ccloaded,pcloaded,boo,exitafter:boolean;
  poller:string[4];
 
 {**************************************************************************}
@@ -78,7 +84,7 @@ end;
 procedure win(b:byte);
 
 begin
- if b<>currwindow then begin
+ if (b<>currwindow) and (currwindow<>$FF) then begin
   case b of
    1:window(4,2,77,2);
    2:begin
@@ -210,11 +216,11 @@ var
 
 begin
  temp:=getstatus;
- if running then win(2);
- writeln(s);
- if s<>'' then s:=time+' '+s;
- writeln(logfile,s);
+ writeln(logfile,time+' '+s);
  flush(logfile);
+ if running then win(2);
+ delete(s,1,2);
+ writeln(s);
 end;
 
 {**************************************************************************}
@@ -304,6 +310,29 @@ end;
 
 {**************************************************************************}
 
+procedure drawbox;
+
+var
+ loop:byte;
+
+begin
+ window(1,1,80,25);
+ write('ÉÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ»');
+ write('º                                                                              º');
+ write('ÇÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¶');
+ write('º ÕÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ APNS Status ÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¸ º'); for loop:=1 to 8 do
+ write('º ³                                                                          ³ º');
+ write('º ÔÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¾ º');
+ write('º ÖÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ Modem Communications ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ· º'); for loop:=1 to 8 do
+ write('º º                                                                          º º');
+ write('º ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½ º');
+ write('ÈÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¼');
+ win(1);
+ centre('APNS Version '+version+' Copyright (c) 1993 Michael E. Ralphson');
+end;
+
+{**************************************************************************}
+
 procedure quietall;
 
 var
@@ -347,29 +376,6 @@ begin
    ext:='.EXE';
   end;
  end;
-end;
-
-{**************************************************************************}
-
-procedure drawbox;
-
-var
- loop:byte;
-
-begin
- window(1,1,80,25);
- write('ÉÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ»');
- write('º                                                                              º');
- write('ÇÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¶');
- write('º ÕÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ APNS Status ÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¸ º'); for loop:=1 to 8 do
- write('º ³                                                                          ³ º');
- write('º ÔÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¾ º');
- write('º ÖÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ Modem Communications ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ· º'); for loop:=1 to 8 do
- write('º º                                                                          º º');
- write('º ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½ º');
- write('ÈÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¼');
- win(1);
- centre('APNS Version '+version+' Copyright (c) 1993 Michael E. Ralphson');
 end;
 
 {**************************************************************************}
@@ -595,6 +601,22 @@ begin
  if abort then escpressed:=true;
 end;
 
+{*************************************************************************}
+
+procedure allocbuf;
+
+var
+ size,temp:word;
+
+begin
+ size:=mem_avail;
+ if size>3840 then size:=3840;
+ buflen:=size*16;
+ bufpos:=0;
+ bufseg:=mem_alloc(size);
+ buf:=ptr(bufseg,0);
+end;
+
 {**************************************************************************}
 
 {$I route.inc}
@@ -718,9 +740,11 @@ begin
 
  s:='';
  boo:=initialise(s);
+ exitafter:=setup.exitafter;
 
  if paramcount=0 then dial else
  for parm:=1 to paramcount do begin
+  exitafter:=setup.exitafter;
   s:=paramstr(parm);
   s:=ucase(s);
   if (length(s)>4) and (copy(s,1,4)='DIAL') then begin
@@ -730,7 +754,7 @@ begin
    s:='DIAL';
   end;
   if s='WAITONCE' then begin
-   setup.exitafter:=true;
+   exitafter:=true;
    s:='WAIT';
   end;
   if (length(s)=6) and (copy(s,1,2)='WW') then begin

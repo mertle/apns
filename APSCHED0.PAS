@@ -16,10 +16,7 @@ type
 {$I apdefs.inc}
 
 const
- space=#32;
- cr=#13;
- lf=#10;
- esc=#27;                  {Ja,Fe,Ma,Ap,Ma,Ju,Ju,Au,Se,Oc,No,De}
+                           {Ja,Fe,Ma,Ap,Ma,Ju,Ju,Au,Se,Oc,No,De}
  dim:array [1..12] of byte=(31,28,31,30,31,30,31,31,30,31,30,31);
  nod:array [0..6] of string[6]=('Sun','Mon','Tues','Wednes','Thurs','Fri','Satur');
  pass:string[20]='DOS';
@@ -29,19 +26,14 @@ var
  exitsave:pointer;
  s:string;
  logname:string[128];
- time,date,edate:string[20];
- dir:dirstr;
- name:namestr;                   {fsplit of invoked name}
- ext:extstr;
+ time,date,realdate,edate:string[20];
  dow,year,month,day:word;
  apbatch,logfile:text;
  apdat:file of longint;
  next2run:longint;
  ioerror:integer;
- r:registers;
  daysofar:word;
  debug:boolean;
-
  keyboard:byte absolute $40:$17;
  keybtemp:byte;
 
@@ -86,6 +78,7 @@ var
 begin
  gettime(w1,w2,w3,w4);
  getdate(year,month,day,dow);
+ realdate:=itos(day,2)+'/'+itos(month,2)+'/'+itos(year mod 100,2);
  if year mod 4=0 then dim[2]:=29; {Leap years}
  if w1<7 then yesterday;
  time:=itos(w1,2)+':'+itos(w2,2)+':'+itos(w3,2);
@@ -99,8 +92,9 @@ procedure log(s:string);
 begin
  maketd;
  s:=time+' '+s;
- if debug then writeln(s);
  writeln(logfile,s);
+ if debug then writeln(s);
+ flush(logfile);
 end;
 
 {**************************************************************************}
@@ -125,7 +119,6 @@ begin
   writeln;
  end;
  maketd;
- if debug then log('  APSCHED exited ('+date+')');
  close(logfile);
 end;
 
@@ -146,12 +139,35 @@ end;
 
 {**************************************************************************}
 
+function checkholidays:boolean;
+
+var
+ f:text;
+ s,hdate:string;
+ 
+begin
+ checkholidays:=true;
+ s:=homepath+'HOLIDAYS.TXT';
+ if exist(s) then begin
+  assign(f,s);
+  reset(f);
+  while not eof(f) do begin
+   readln(f,hdate);
+   while (hdate<>'') and (hdate[length(hdate)]<=#32) do dec(hdate[0]);
+   if (hdate=realdate) then checkholidays:=false;
+  end;
+  close(f);
+ end;
+end; 
+
+{**************************************************************************}
+
 procedure copyright;
 
 begin
  writeln;
  writeln('APSCHED Version '+version+' (Last Revision '+lastrev+')');
- writeln('Copyright (c) 1991,92 Michael E. Ralphson, All Rights Reserved');
+ writeln('Copyright (c) 1991,93 Michael E. Ralphson, All Rights Reserved');
 end;
 
 {**************************************************************************}
@@ -164,6 +180,8 @@ var
  c:char;
 
 begin
+ r.ax:=scrmode;
+ intr($10,r);
  writeln;
  s:='';
  loop:=1;
@@ -226,23 +244,25 @@ end;
 { APSCHED }
 
 var
- c:char;
  loop:longint;
+ adname,dossite:string;
+ c:char;
  event:schedentry;
  schedfile:file of schedentry;
  configfile:file of config;
  doit:boolean;
  week:byte;
- adname,dossite:string;
 
 begin
  debug:=false;
  textattr:=7;
  clrscr;
 
- r.ah:=$B;
- r.bx:=0;
- intr($10,r);
+ asm
+  mov ah,$B
+  xor bx,bx
+  int $10
+ end;
 
  checkbreak:=false;
 
@@ -251,13 +271,11 @@ begin
 
  if debug then copyright;
  
- s:=fexpand(paramstr(0));
- fsplit(s,dir,name,ext);
- logname:=dir+'APNS.LOG';
+ logname:=homepath+'APNS.LOG';
  assign(logfile,logname);
  if exist(logname) then append(logfile) else rewrite(logfile);
 
- adname:=dir+'APSCHED.DAT';
+ adname:=homepath+'APSCHED.DAT';
 
  assign(apdat,adname);
  reset(apdat);
@@ -282,9 +300,11 @@ begin
 
  keybtemp:=keyboard;
  keybtemp:=keybtemp and 239;
+ inline($FA);
  keyboard:=keybtemp;
+ inline($FB);
  
- s:=dir+'APNS.CFG';
+ s:=homepath+'APNS.CFG';
  assign(configfile,s);
  reset(configfile);
  ioerror:=ioresult;
@@ -317,7 +337,7 @@ begin
   end;
  end;
 
- s:=dir+'APNS.SCH';
+ s:=homepath+'APNS.SCH';
  assign(schedfile,s);
  reset(schedfile);
 
@@ -372,6 +392,11 @@ begin
     doit:=false;
     if debug then log('* '+event.name+' is for another country only');
    end;
+   
+   if (doit) and (event.holiday) then begin
+    doit:=checkholidays;
+    if (debug) and (not doit) then log('* '+event.name+' could not be run because it is a holiday');
+   end; 
 
    inc(next2run);
   until (next2run>=filesize(schedfile)) or (doit);
@@ -384,12 +409,12 @@ begin
  end;
 
  close(schedfile);
- assign(apbatch,dir+'APSCHED.BAT');
+ assign(apbatch,homepath+'APSCHED.BAT');
  rewrite(apbatch);
  writeln(apbatch,'@ECHO OFF');
  writeln(apbatch,':START');
- writeln(apbatch,dir[1]+':');
- s:=dir;
+ writeln(apbatch,homepath[1]+':');
+ s:=homepath;
  dec(s[0]);
  writeln(apbatch,'CD '+s);
  writeln(apbatch,'APSCHED0.EXE');
@@ -407,7 +432,7 @@ begin
   replace(event.command,'%YEAR',copy(date,7,2),false);
   replace(event.command,'%DATE',date,false);
   
-  if next2run=1 then log('ð '+event.name+' ('+date+')')
+  if next2run=1 then log('ð '+event.name+' ('+realdate+')')
    else log('= '+event.name);
   writeln(apbatch,'CALL '+event.command);
   writeln(apbatch,'GOTO START');

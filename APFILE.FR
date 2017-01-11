@@ -1,0 +1,30 @@
+{$DEFINE FR}
+ApFile, APNS Directeur du Fichier version
+! Veuillez raconter
+Visualisez l''Archive
+ÄÄ REP ÄÄ
+Erreur','il n''y a pas d''entr‚es dans la liste du noeud
+Erreur','Pas assez de m‚moire pour listes du fichier
+Ne pouvez pas ex‚cuter ',lhastr,', v‚rifie le path ou m‚moire
+Archiver du fichier, attend s''il vous plaŒt...
+Destination
+Routez A travers
+Destination et Route Adresse est le mˆme.  Envoyer Dirige.
+pendant qu''ouverture le fichier de la configuration
+pendant que lecture le fichier de la configuration
+! Fichier de la configuration a ‚t‚ alt‚r‚
+Guide de la Touche Fonction
+Retour choisit le fichier ou r‚p.
+F1 Router le fichier
+F2 Router … TOUT
+F3 Envoyer … TOUT
+F4 Assortir selon Nom
+F5 Assortir selon Ext.
+F6 Assortir selon Date
+F7 Assortir selon Taille
+F8 pour un liste naturel
++ et - Mark / Unmark
+ESC sortir ApFile
+Utilisez en haut, en bas, PgUp, PgDn, Home, Fin et A..Z choisir
+Erreur','Vous ne pouvez pas router un r‚pertoire
+Erreur','Vous ne pouvez pas envoyer un r‚pertoire

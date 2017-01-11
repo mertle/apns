@@ -16,63 +16,35 @@ type
   name:string[12];
  end;
  ss=string[4];
+ buffer=array [1..50000] of byte;
 
-{$I truename.inc}
 {$I apcrc.inc}
 
 var
- sr:searchrec;
- mr:apc;
+ handle,crc,loop,bytesread:word;
  outfile:file of apc;
  ofname,param,s:string;
- crc,loop:word;
- inner,outer,checksum,b:byte;
- buffer:array [1..50000] of byte;
- f:file;
- dir:dirstr;
- name:namestr;
- ext:extstr;
- bytesread:word;
+ buf:^buffer;
  ioerror:integer;
  dt:datetime;
  nofiles,nobytes:longint;
+ f:file;
+ sr:searchrec;
+ mr:apc;
+ inner,outer,b:byte;
+ dir:dirstr;
+ name:namestr;
+ ext:extstr;
  fast:boolean;
  
 {**************************************************************************} 
-
-function pad(w:word):ss;
-
-var
- temp:ss;
-
-begin
- str(w:2,temp);
- if temp[1]=' ' then temp[1]:='0';
- pad:=temp;
-end;
-
-{**************************************************************************} 
-
-function hex(w:word):ss;
-
-const
- hs:array [0..15] of char='0123456789ABCDEF';
-
-begin
- hex:=hs[hi(w) div 16]+hs[hi(w) mod 16]+hs[lo(w) div 16]+hs[lo(w) mod 16];
-end;
-
-{**************************************************************************} 
-
-var
- sticky:byte;
 
 begin
  checksnow:=false;
  textattr:=7;
  clrscr;
  fast:=false;
- writeln(#10' ApCheck - Program / Data File Integrity Checker v1.40 (c) 1992 M E Ralphson');
+ writeln(#10' ApCheck - ''Footprint'' File Creation Utility v2.15 (c) 1993 M E Ralphson');
  writeln;
 
  if paramcount<2 then begin
@@ -80,7 +52,11 @@ begin
   exit;
  end;
 
+ handle:=mem_alloc(3125);
+ buf:=ptr(handle,0);
+ 
  ofname:=paramstr(1);
+ if pos('.',ofname)=0 then ofname:=ofname+'.APC';
  ofname:=fexpand(ofname);
 
  assign(outfile,ofname);
@@ -110,7 +86,7 @@ begin
   if param='/Q' then fast:=true else begin
    param:=fexpand(param);
    fsplit(param,dir,name,ext);
-   write(truename(param));
+   write(param);
    clreol;
    window(1,8,80,25);
    clrscr;
@@ -132,8 +108,8 @@ begin
     write(s,'  ');
  
     unpacktime(sr.time,dt);
-    with dt do write(pad(day),'/',pad(month),'/',pad(year),' ',pad(hour),':',
-     pad(min),':',pad(sec),'  ');
+    with dt do write(itos(day,2),'/',itos(month,2),'/',itos(year,2),' ',
+                     itos(hour,2),':',itos(min,2),':',itos(sec,2),'  ');
  
     crc:=0;
     if not fast then begin 
@@ -143,13 +119,13 @@ begin
      if ioerror<>0 then writeln(' [IO Error ',ioerror,']') else begin
       crc:=0;
       repeat
-       blockread(f,buffer,50000,bytesread);
-       crc16(crc,buffer,bytesread);
+       blockread(f,buf^,50000,bytesread);
+       crc16(crc,buf^,bytesread);
       until bytesread<50000;
       close(f);
      end;
     end;
-    write(hex(crc),'h');
+    write(w2hexs(crc),'h');
     if fast then write(#13) else writeln;
 
     mr.filecrc:=crc;

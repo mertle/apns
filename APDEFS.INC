@@ -1,5 +1,5 @@
 const
- version='2.15';
+ version='2.15b';
  hexstr:string[16]='0123456789ABCDEF';
  yesno:array [false..true] of string[3]=('No ','Yes');
  monocols:array [1..7] of byte=(7,0,0,7,0,7,0);
@@ -18,7 +18,8 @@ type
   priority:string[4];
   onceonly:boolean;
   country:byte;
-  other:array [1..108] of byte;
+  holiday:boolean;
+  other:array [1..107] of byte;
  end;
 
  dialentry=record
@@ -54,8 +55,9 @@ type
   password:string[40];
   nopickup:boolean;
   unixtime:longint;
-  unixvalid:boolean;
-  newstuff:array [1..196] of byte;
+  unixvalid:byte;
+  revision:word;
+  newstuff:array [1..194] of byte;
  end;
 
  txpacket=searchrec;

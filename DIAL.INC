@@ -1,9 +1,8 @@
-{ Marked with œœ is the SentFiles mod, not yet paid for }
-
 var
  currsite,temp:dialentry;
  dialfile:file of dialentry;
  xferfile:string;
+ sess:string[4];
 
 const
  last:longint=0;
@@ -65,35 +64,18 @@ end;
 
 {*************************************************************************}
 
-function maketime(addmins:byte):longint;
+function maketime(addsecs:word):longint;
 
 var
  temp:word;
- result:longint;
  dt:datetime;
 
 begin
- gettime(dt.hour,dt.min,dt.sec,temp);
- getdate(dt.year,dt.month,dt.day,temp);
- inc(dt.min,addmins);
- if dt.min>59 then begin
-  dec(dt.min,60);
-  inc(dt.hour);
- end;
- if dt.hour>23 then begin
-  dec(dt.hour,24);
-  inc(dt.day);
- end;
- if dt.day>31 then begin
-  dec(dt.day,31);
-  inc(dt.month);
- end;
- if dt.month>12 then begin
-  dec(dt.month,12);
-  inc(dt.year);
- end;
- packtime(dt,result);
- maketime:=result;
+ with dt do begin
+  gettime(hour,min,sec,temp);
+  getdate(year,month,day,temp);
+ end; 
+ maketime:=dos2unix(dt)+addsecs;
 end;
 
 {*************************************************************************}
@@ -113,43 +95,16 @@ begin
  pkts:=0;
  bytes:=0;
  win(2);
- write('Checking outbound directory');
- if lookfor<>'' then begin
-  writeln(' for ',lookfor);
-  s:=setup.updir+'\????'+lookfor+'.*';
- end else begin
-  writeln;
-  s:=setup.updir+'\*.*';
- end; 
- findfirst(s,0,sr);
+ findfirst(setup.updir+'\*.*',0,sr);
  while doserror=0 do begin
-  fsplit(sr.name,dir,name,ext);
-  if length(name)<>8 then begin
-   writeln('Misnamed packet: ',sr.name);
-   qlog('! Misnamed packet: '+sr.name);
-  end else begin
-   srce:=copy(name,1,4);
-   dest:=copy(name,5,4);
-   write('From ',srce,' To ',dest);
-   if srce=setup.site then write(' (Direct)') else
-   if dest=setup.site then write(' (Local) ') else
-    write(' (Routed)');
-   writeln(' Size: ',sr.size);
-   inc(pkts);
-   inc(bytes,sr.size);
-  end;
-  findnext(sr);
- end;
- 
- if lookfor<>'' then begin
-  s:=setup.updir+'\????-ALL.*';
-  findfirst(s,0,sr);
-  while doserror=0 do begin
+  if (lookfor='') or (pos(lookfor,sr.name)=5) or (pos('-ALL',sr.name)=5) 
+                  or (pos(sess,sr.name)=5) then begin
+   if pkts=0 then begin
+    write('Checking outbound directory');
+    if lookfor<>'' then writeln(' for ',lookfor) else writeln;
+   end;
    fsplit(sr.name,dir,name,ext);
-   if length(name)<>8 then begin
-    writeln('Misnamed packet: ',sr.name);
-    qlog('! Misnamed packet: '+sr.name);
-   end else begin
+   if length(name)<>8 then log('! Misnamed packet: '+sr.name) else begin
     srce:=copy(name,1,4);
     dest:=copy(name,5,4);
     write('From ',srce,' To ',dest);
@@ -160,10 +115,10 @@ begin
     inc(pkts);
     inc(bytes,sr.size);
    end;
-   findnext(sr);
-  end;
- end;
- writeln('Number of packets: ',pkts,' totalling ',bytes,' bytes');
+  end; 
+  findnext(sr);
+ end; 
+ if pkts>0 then writeln('Number of packets: ',pkts,' totalling ',bytes,' bytes');
  checkoutbound:=pkts;
 end;
 
@@ -184,20 +139,17 @@ begin
  pkts:=0;
  bytes:=0;
  win(2);
- writeln('Checking inbound directory');
  s:=setup.downdir+'\*.*';
  findfirst(s,0,sr);
  while doserror=0 do begin
+  if pkts=0 then writeln('Checking inbound directory');
   fsplit(sr.name,dir,name,ext);
-  if length(name)<>8 then begin
-   writeln('Misnamed packet: ',sr.name);
-   qlog('! Misnamed packet: '+sr.name);
-  end else begin
+  if length(name)<>8 then log('! Misnamed packet: '+sr.name) else begin
    srce:=copy(name,1,4);
    dest:=copy(name,5,4);
    write('From ',srce,' To ',dest);
    if srce=setup.site then write(' (Local) ') else
-   if (dest=setup.site) or (dest='-ALL') then
+   if (dest=setup.site) or (dest='-ALL') or (copy(dest,1,2)='-S') then
     write(' (Direct)') else write(' (Routed)');
    writeln(' Size: ',sr.size);
    inc(pkts);
@@ -205,53 +157,56 @@ begin
   end;
   findnext(sr);
  end;
- writeln('Number of packets: ',pkts,' totalling ',bytes,' bytes');
+ if pkts>0 then writeln('Number of packets: ',pkts,' totalling ',bytes,' bytes');
  checkinbound:=pkts;
 end;
 
 {*************************************************************************}
 
-procedure split_all(site:string);
+procedure split_multi(site:string);
 
 var
- buf:array [1..2048] of byte;
  i,o:file;
  sr:searchrec;
  number,bread:word;
  iname,oname,ext:string;
 
 begin
+ allocbuf;
  job:='Split -ALLs ';
- findfirst(setup.updir+'\????-ALL.???',0,sr);
+ findfirst(setup.updir+'\*.*',0,sr);
  while doserror=0 do begin
   status;
-  iname:=setup.updir+'\'+sr.name;
-  oname:=setup.updir+'\'+copy(sr.name,1,4)+site+'.';
-  ext:='000';
-  number:=1;
-  while (exist(oname+ext)) and (number<1000) do begin
-   ext:=itos(number,3);
-   inc(number);
-  end;
-  assign(i,iname);
-  reset(i,1);
-  assign(o,oname+ext);
-  rewrite(o,1);
-  if ioresult=0 then begin
-   repeat
-    blockread(i,buf,2048,bread);
-    blockwrite(o,buf,bread);
-   until bread<2048;
-   close(i);
-   close(o);
-  end;
+  if (pos('-ALL',sr.name)=5) or (pos(sess,sr.name)=5) then begin
+   iname:=setup.updir+'\'+sr.name;
+   oname:=setup.updir+'\'+copy(sr.name,1,4)+site+'.';
+   ext:='000';
+   number:=1;
+   while (exist(oname+ext)) and (number<1000) do begin
+    ext:=itos(number,3);
+    inc(number);
+   end;
+   assign(i,iname);
+   reset(i,1);
+   assign(o,oname+ext);
+   rewrite(o,1);
+   if ioresult=0 then begin
+    repeat
+     blockread(i,buf^,buflen,bread);
+     blockwrite(o,buf^,bread);
+    until bread<buflen;
+    close(i);
+    close(o);
+   end;
+  end; 
   findnext(sr);
  end;
+ mem_free(bufseg);
 end;
 
 {*************************************************************************}
 
-procedure kill_all;
+procedure kill_multi;
 
 var
  f:file;
@@ -259,12 +214,14 @@ var
 
 begin
  job:='Kill -ALLs  ';
- findfirst(setup.updir+'\????-ALL.???',0,sr);
+ findfirst(setup.updir+'\*.*',0,sr);
  while doserror=0 do begin
   status;
-  assign(f,setup.updir+'\'+sr.name);
-  erase(f);
-  if ioresult<>0 then beep;
+  if (pos('-ALL',sr.name)=5) or (pos(sess,sr.name)=5) then begin
+   assign(f,setup.updir+'\'+sr.name);
+   erase(f);
+   if ioresult<>0 then beep;
+  end; 
   findnext(sr);
  end;
 end;
@@ -322,7 +279,7 @@ begin
   job:='Waiting     ';
   status;
   if keypressed then c:=readkey;
-  if c=space then run('');
+  if c='*' then run('');
   
   win(3);
   while charwaiting do begin
@@ -369,9 +326,6 @@ begin
   job:='Waiting     ';
   status;
 
-  if keypressed then c:=readkey;
-  if c='#' then auxwrite('ATA|');
-
   if carrierdetect and (sitecrc<>6541) then begin
    job:='Answering   ';
    status;
@@ -392,13 +346,14 @@ begin
      run(s);
     end; 
     win(2);
-    if setup.exitafter then hour:=setup.waitfinish;
+    if exitafter then hour:=setup.waitfinish;
    end;
   end;
 
   if keypressed then c:=readkey;
-  if c=space then run('');
-  if c='H' then hangup;
+  if c='#' then auxwrite('ATA|');
+  if c='*' then run('');
+  if c='^' then hangup;
   if c='?' then begin
    s:=ucase(setup.okwait);
    replace(s,'%SITE',setup.site,false);
@@ -424,14 +379,14 @@ procedure dial;
 
 var
  outer,totsites,called,target,now,loopsite:longint;
- send,s,whole,part:string;
- thour,tmin,tsec:word;
- currtime,packets:longint;
+ send,s:string;
+ currtime,packets,deaduntil:longint;
  c:char;
  dialnow,proceed,writeback,display,sentfiles,dead:boolean;
  inner,chour,nhour,cpos:byte;
 
 begin
+ deaduntil:=0;
  sentfiles:=false;
  qlog('  Waiting for dialling window');
  job:='Check Nodes ';
@@ -448,17 +403,28 @@ begin
   seek(dialfile,loopsite);
   read(dialfile,currsite);
   writeback:=true;
+  
   if (currsite.days>6) and (currsite.session=currsession) then begin
    str(currsite.days,s);
    log('! '+currsite.site+' '+currsite.name+' has been unobtainable for '+s+' days');
-  end else 
+   writeback:=false;
+  end;
+   
   if (currsite.control=never) or (currsite.session<>currsession)
-   then writeback:=false else
-  if currsite.number='' then else
-  if currsite.site='' then 
-  else inc(totsites);
+   then writeback:=false;
+   
+  if currsite.number='' then begin
+   log('! '+currsite.site+' '+currsite.name+' has no telephone number');
+   writeback:=false;
+  end; 
   
+  if currsite.site='' then begin
+   log('! '+currsite.name+' has no site code');
+   writeback:=false;
+  end;
+   
   if writeback then begin
+   inc(totsites);
    inc(currsite.days);
    currsite.today:=fail;
    currsite.attempts:=0;
@@ -515,7 +481,7 @@ begin
   status;
 
   if keypressed then c:=readkey;
-  if c=' ' then run('');
+  if c='*' then run('');
 
   nhour:=hour;
   if nhour<setup.dialstart then inc(nhour,24);
@@ -532,8 +498,9 @@ begin
   exit;
  end;
 
- str(succ(currsession),s);
- qlog('  Dialling sites. Session '+s);
+ sess:=itos(succ(currsession),2);
+ qlog('  Dialling sites. Session '+sess);
+ sess:='-S'+sess;
  called:=0;
 
  repeat
@@ -571,7 +538,7 @@ begin
     packets:=checkoutbound(currsite.site);
     if packets=0 then begin
      dialnow:=false;
-     currsite.notuntil:=maketime(setup.dialpause);
+     currsite.notuntil:=maketime(setup.dialpause*60);
      seek(dialfile,loopsite);
      write(dialfile,currsite);
     end; 
@@ -580,28 +547,29 @@ begin
    
    if dialnow then begin
     dead:=false;
-    c:='*';
+    c:='þ';
 
     {Inc. # of retries and make this number undiallable for n mins}
 
     inc(currsite.attempts);
-    currsite.notuntil:=maketime(setup.dialpause);
+    currsite.notuntil:=maketime(setup.dialpause*60);
     seek(dialfile,loopsite);
     write(dialfile,currsite);
+    
+    job:='Dialling    ';
+    status;
+    win(2);
+    writeln;
+    packets:=checkoutbound(currsite.site);
     
     str(currsite.attempts,s);
     writeln(logfile);
     log('  Dialling '+currsite.name+' (Site '+currsite.site+') Attempt '+s);
-
+    
     with setup do setport(comport,currsite.bips,parity,length,stopbits);
     delay(500);
     str(currsite.bips:6,curspeed);
     purge;
-    
-    packets:=checkoutbound(currsite.site);
-    
-    job:='Dialling    ';
-    status;
     win(3);
     send:=currsite.prefix+currsite.number+cr;
     laststr:='';
@@ -616,33 +584,13 @@ begin
     delay(1500);
     while charwaiting do receive;
 
-    thour:=hour;
-    tmin:=min;
-    tsec:=sec;
-    inc(tsec,setup.dialtime);
-    if tsec>59 then begin
-     inc(tmin);
-     dec(tsec,60);
-    end;
-    if tmin>59 then begin
-     inc(thour);
-     dec(tmin,60);
-    end;
-    if thour>23 then thour:=0;
-    target:=(thour*3600)+(tmin*60)+tsec;
-    whole:=itos(thour,2);
-    part:=itos(tmin,2);
-    whole:=whole+':'+part;
-    part:=itos(tsec,2);
-    whole:=whole+':'+part;
+    target:=maketime(setup.dialtime);
     win(2);
-    writeln('Dialling until '+whole);
     job:='Awaiting    ';
     repeat
      status;
-     now:=(hour*3600)+(min*60)+sec;
-     if now>target then dec(now,86400);
-    until (now=target) or keypressed or carrierdetect or charwaiting or nodial;
+     now:=maketime(0);
+    until (now>=target) or keypressed or carrierdetect or charwaiting or nodial;
     write('Finished dialling:');
     if nodial then write(' Modem Abort;');
     if now=target then write(' Time Up;');
@@ -677,7 +625,7 @@ begin
      route;
      if (currsite.today=success) or (currsite.today=oneway) then begin
       currsite.days:=0;
-{œœ} { sentfiles:=true; }
+      sentfiles:=true;
       if currsite.today=success then inc(called);
       s:=ucase(setup.okdial);
       replace(s,'%SITE',currsite.site,false);
@@ -714,6 +662,8 @@ begin
    end;
   end;
   
+  currtime:=maketime(0);
+  if currtime<deaduntil then dead:=false else 
   if (dead) and (called<totsites) and (hour<>setup.dialfinish) then begin
    job:='Finished?   ';
    loopsite:=0;
@@ -726,7 +676,8 @@ begin
      if packets>0 then dead:=false;
     end; 
     inc(loopsite);
-   until (loopsite=last) or (not dead); 
+   until (loopsite=last) or (not dead);
+   deaduntil:=maketime(setup.dialpause*60); 
   end;
   
   status;
@@ -736,7 +687,7 @@ begin
    log('! APNS Dial aborted from the keyboard');
    hour:=setup.dialfinish;
   end; 
-  if c=' ' then run('');
+  if c='*' then run('');
   
  until (dead) or (called>=totsites) or (hour=setup.dialfinish);
  
@@ -753,13 +704,13 @@ begin
   read(dialfile,currsite);
   delay(100);
   if (currsite.today=fail) and (currsite.control=whensend) then begin
-   dec(currsite.days);
+   if currsite.days>0 then dec(currsite.days);
    writeback:=true;
   end; 
   if (currsite.control=never) or (currsite.session<>currsession)
    then display:=false;
   if (sentfiles) and ((currsite.today=fail) or (currsite.today=partial)) then
-   split_all(currsite.site);
+   split_multi(currsite.site);
   if display then case currsite.today of
    fail   :log('! Did not connect with site '    +currsite.site+' '+currsite.name);
    partial:log('! Handshake only with site '     +currsite.site+' '+currsite.name);
@@ -773,5 +724,5 @@ begin
   end;
  end;
  close(dialfile);
- if sentfiles then kill_all;
+ if sentfiles then kill_multi;
 end;

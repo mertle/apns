@@ -12,7 +12,7 @@ Definitions:
 
 Reason for new specification:
 
-The current method of file-identification (that of using the file
+The original method of file-identification (that of using the file
 extension as the origin / destination site number) is not sufficient
 for the full system envisaged, in which sites may be polled by several
 different offices, and files transmitted through the system from any
@@ -31,7 +31,7 @@ utility version 2.13 or above (as this generates smaller files and is
 generally faster than version 1.13c used previously).
 
 | APNS version 2.10 and higher depends on LHA version 2, as it
-| directly modifies .LZH files when it processes routed files in
+| directly examines .LZH files when it processes routed files in
 | the \APNS\RECV directory. 
 |
 | The APFILE utility also calls LHA directly from the program.

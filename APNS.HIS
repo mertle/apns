@@ -1,4 +1,22 @@
-2.15 October 1992
+2.15b April 1993
+ÄÄÄ> ApConfig now uses the Utility library (reduced memory requirements)
+ÄÄÄ> ApFile fixed bug changing to a floppy drive with no disk present
+ÄÄÄ> Added disk buffering to the receive file routine (helps at 9600+ bps)
+ÄÄÄ> Changed from a percentage to actual cps rate on file transfer
+ÄÄÄ> Localised block receive and CRC routines in file transfer
+ÄÄÄ> Fixed bug if using WAITONCE then another WAIT command on the cmd-line
+ÄÄÄ> Fixed bug in time/date transfer from poller to polled
+ÄÄÄ> Inter-dial pause rewritten using new code for time/date transfer
+ÄÄÄ> User can edit / delete multiple records more easily now 
+ÄÄÄ> Fixed bug, ApConfig always said the config had changed in Apns.Log
+ÄÄÄ> ApComp, added extension-exclusion list for comparing footprints
+ÄÄÄ> Added ability to send a file to all members of a dialling session -Snn
+ÄÄÄ> Terminal mode window is now full screen (24 lines)
+ÄÄÄ> All disk intensive routines now use the same buffer strategy
+ÄÄÄ> Fixed bug, now checks for WhenSend sites with no files every 5 mins
+ÄÄÄ> Added facility to scheduler to take account of holidays
+
+2.15 October 1992 - March 1993
 ÄÄÄ> Encrypted configuration file
 ÄÄÄ> Won't attempt to dial if sitecode or telephone number is blank
 ÄÄÄ> Routing multiple files to same destination now works ok
@@ -20,6 +38,7 @@
 ÄÄÄ> Files to -ALL that don't go to all sites are sent individually
 ÄÄÄ> ApFile: Send to -ALL, releases file buffer memory for shell to LHA
 ÄÄÄ> APNS original date and time is maintained on transferred files
+ÄÄÄ> Removed log summary file creation
 ÄÄÄ> ApFile, increased number of files that can be read per directory to 2500
 ÄÄÄ> Ability to process inbound files in historical order
 ÄÄÄ> Fixed problem quitting when there are only WhenSend sites left to dial
@@ -32,11 +51,6 @@
 ÄÄÄ> Added new limited demo which transfers files but zeroes contents
 ÄÄÄ> Eliminated need for English.Inc (added Translate utility)
 ÄÄÄ> ApSched would run ENDMONTH events on Saturday if Sunday was the month end
-ÄÄÄ> ApConfig now uses the Utility library (reduced memory requirements)
-ÄÄÄ> ApFile fixed bug changing to a floppy drive with no disk present
-ÄÄÄ> Added disk buffering to the receive file routine (helps at 9600+ bps)
-ÄÄÄ> Changed from a percentage to actual cps rate on file transfer
-ÄÄÄ> Localised block receive and CRC routines in file transfer
 
 2.10 September 1992, Added ApFile file manager / sender / router
 ÄÄÄ> Fixed bug in ApConfig screen colours setup
@@ -89,7 +103,9 @@
 ÄÄÄ> Made updating the site's clock optional for each site (for international)
 
 { From version 2, version numbers will only change when programs are       }
-{ not comms compatible (ie, cannot communicate between different versions) }
+{ not comms compatible, or there is a major advance in the software.       }
+{ Revisions of the software that are comms compatible will have a one      }
+{ letter suffix, eg. version 2.15b supercedes 2.15 but is still compatible }
 
 2.00 June 1992, Modem list capability
 ÄÄÄ> New display code

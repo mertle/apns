@@ -1,6 +1,6 @@
 {For the time being, this version uses both methods of sending the time, 
- in IBM packed and Unix time formats. The next version that is not comms- 
- compatible with v2.15 will have the Unix (timezoned) format method only}
+ in IBM packed and Unix2 time formats. The next version that is not comms- 
+ compatible with v2.15 will have the Unix2 (timezoned) format method only}
 
 function polling:result;
 
@@ -32,16 +32,18 @@ begin
  mine.sender:=setup.site;
  mine.receiver:=currsite.site;
  mine.password:=setup.password;
- mine.timevalid:=currsite.sendtime;
- mine.unixvalid:=currsite.sendtime;
+ if currsite.sendtime then begin
+  mine.timevalid:=true;
+  mine.unixvalid:=2;
+ end; 
 
 {Get number of files to transmit}
 
  findfirst(setup.updir+'\*.*',0,nextfile);
  while doserror=0 do begin
   fsplit(fexpand(nextfile.name),dir,name,ext);
-  if (pos('-ALL',nextfile.name)=5) or (pos(currsite.site,nextfile.name)=5)
-   then inc(mine.files);
+  if (pos(currsite.site,nextfile.name)=5) or (pos('-ALL',nextfile.name)=5) or 
+     (pos(sess,nextfile.name)=5) then inc(mine.files);
   findnext(nextfile);
  end;
  
@@ -123,8 +125,9 @@ begin
 
  findfirst(setup.updir+'\*.*',0,nextfile);
  for outer:=1 to mine.files do begin
-  while (pos('-ALL',nextfile.name)<>5) and
-        (pos(currsite.site,nextfile.name)<>5) do findnext(nextfile);
+  while (pos(currsite.site,nextfile.name)<>5) and 
+        (pos('-ALL',nextfile.name)<>5) and (pos(sess,nextfile.name)<>5) 
+        do findnext(nextfile);
   transfer:=nextfile;
   times:=0;
   repeat

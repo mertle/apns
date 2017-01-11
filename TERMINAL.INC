@@ -3,11 +3,13 @@
 procedure terminal;
 
 var
- c:char;
+ c,t:char;
 
 begin
+ window(1,1,80,24);
+ clrscr;
+ currwindow:=$FF;
  if init(setup.cmdinit) then;
- win(3);
  cursoron;
  c:=#0;
  repeat
@@ -19,8 +21,11 @@ begin
    sendaux(ord(c));
    sending:=false;
   end;
+  while charwaiting do begin
+   t:=chr(getaux);
+   write(t);
+  end;
   if not charwaiting then status;
-  while charwaiting do receive;
  until c=#27;
  cursoroff;
 end;

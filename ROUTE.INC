@@ -30,7 +30,6 @@ var
   ext:extstr;
   oname,stem:string;
   loop,bread:word;
-  buffer:array [1..1024] of byte;
   move:longint;
   addlen:byte;
 
@@ -50,14 +49,15 @@ var
   end;
   if loop>999 then exit;
   writeln('Rerouting: ',oname);
-  
+  allocbuf;
   assign(o,oname);
   rewrite(o,1);
   repeat
-   blockread(f,buffer,1024,bread);
-   blockwrite(o,buffer,bread);
-  until bread<1024;
+   blockread(f,buf^,buflen,bread);
+   blockwrite(o,buf^,bread);
+  until bread<buflen;
   close(o);
+  mem_free(bufseg);
  end;
 
 {--------------------------------------------------------------------------}
