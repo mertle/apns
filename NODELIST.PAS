@@ -8,6 +8,13 @@ program nodelist_utility;
 
 uses dos,crt;
 
+type
+ comport=record
+  base:word;
+  irq:byte;
+  int:byte;
+ end;
+
 {$I apdefs.inc}
 
 type
@@ -41,15 +48,20 @@ var
  scode:nodeid;
  site,region,country:longint;
  bigarray:array [0..7000] of index;
+ depth:word;
 
 procedure sort(l,r: integer);
 
 var
- i,j: integer;
+ i,j:integer;
  x,y:index;
 
 begin
- i:=l; j:=r; x:=bigarray[(l+r) DIV 2];
+ inc(depth);
+ write(depth:5,#13);
+ i:=l;
+ j:=r;
+ x:=bigarray[(l+r) DIV 2];
  repeat
   while bigarray[i].sitecode<x.sitecode do inc(i);
   while x.sitecode<bigarray[j].sitecode do dec(j);
@@ -60,6 +72,7 @@ begin
  until i>j;
  if l<j then sort(l,j);
  if i<r then sort(i,r);
+ dec(depth);
 end;
 
 procedure encode(var id:nodeid;site,region,country:longint);
@@ -139,6 +152,7 @@ begin
   bigarray[loop].sitecode:=currnode.sitecode;
   bigarray[loop].point:=loop;
  end;
+ depth:=0;
  sort(0,indexsize);
  assign(ifile,'NODELIST.IDX');
  rewrite(ifile);

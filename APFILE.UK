@@ -1,0 +1,30 @@
+{$DEFINE UK}
+ApFile, APNS File Manager version
+! Please report
+Archive View
+ÄÄ DIR ÄÄ
+Error','There are no entries in the node-list
+Error','Not enough memory for file lists
+Could not execute ',lhastr,', check paths or free memory
+Archiving files, please wait...
+Destination
+Route Through
+Destination and Route Address are the same. Sending Direct.
+while opening configuration file
+while reading configuration file
+! Configuration file has been tampered with
+Function Key Guide
+Return selects file or dir.
+F1 to Route the file(s)
+F2 to Route to ALL
+F3 to Send to ALL
+F4 to Sort by Name
+F5 to Sort by Extension
+F6 to Sort by Date
+F7 to Sort by Size
+F8 for an Unsorted list
++ and - to Tag / Untag
+ESC to exit ApFile
+Use Up, Down, PageUp, PageDown, Home, End and A..Z to choose
+Error','You cannot route a directory
+Error','You cannot send a directory

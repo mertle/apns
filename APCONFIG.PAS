@@ -1,176 +1,80 @@
-{$A+,B-,D-,E-,F-,G-,I-,L-,N-,O-,R-,S+,V-,X-}
-{$M 16384,0,655360}
+{$A+,B-,D-,E-,F-,G+,I-,L-,N-,O-,R-,S+,V-,X+}
+{$M 16384,0,0}
 
 uses
- crt,dos;
+ test186,crt,dos,utility,data,random6;
 
 const
- max_menu_items=20;
- space=' ';
- cr=#13;
- lf=#10;
- esc=#27;
- nul=#0;
  last:longint=0;
-
-{$I lastrev.inc}
-
-{$I english.inc}
-
-{$I apdefs.inc}
+ yeskey='YOSJ';
+ onoff:array [false..true] of string[3]=('Off','On ');
+ parsetting:array [0..4] of string[5]=('None','Even','Odd','Mark','Space');
 
 type
- screen=array [1..3840] of byte;
- menurec=array [0..max_menu_items] of string[60];
- helprec=array [0..max_menu_items] of string[70];
+ menurec=array [0..20] of string[60];
+ helprec=array [0..20] of string[70];
+ pickact=(seekto,readrec,retmax);
+ comport=record
+  base:word;
+  irq:byte;
+  int:byte;
+ end;
+
+{$I lastrev.inc}
+{$I apdefs.inc}
+{$I runerr.inc}
 
 var
- current,temp:dialentry;
+ currsite:dialentry;
  dialfile:file of dialentry;
- currevent,tempevent:schedentry;
+ currevent:schedentry;
  schedfile:file of schedentry;
+ currmodem:modementry;
+ modemfile:file of modementry;
  ioerror:integer;
- crc:word;
- checksum:byte;
- dosptr:^screen;                 {screen memory pointer for windows}
+ crc,firstcrc:word;
  exitsave:pointer;               {points to termination routine}
 
  thatsallfolks:boolean;          {time for bed?}
 
  setupfile:file of config;       {disk file for setup}
- cfgname:string[128];
+ oldsetup:config;
 
- cursor:boolean;                 {holds current cursor state}
- lights:boolean;
  sending:boolean;
+ datelogged:boolean;
+ limited:boolean;
 
  c:char;
- reg:registers;                  {global variables}
  s,laststr:string;
  statusline,time,date,timer:string[80];
- hour,min,sec:word;
+ mode,hour,min,sec:word;
  loop:word;
- oldcolour:byte;
- mode:byte;
- curspeed:string[5];
+ firetime:string[10];
+ curspeed:string[6];
  curport:string[1];
  mmchoice:byte;
 
- homepath,                       {where .EXT .PRO .CAP files are}
- curpath,                        {directory for upload download etc}
- oldpath,
- curfile:string[128];
- curname:string[8];
-
- dir:dirstr;
- name:namestr;                   {fsplit of invoked name}
- ext:extstr;
+ homepath:string[128];           {where .FON .SCH .MOD files are}
 
  option:menurec;                 {used by menu procedure}
  ophelp:helprec;
- menuname,helpline,oldhelp:string[80];
- cursor_spec:word;
+ menuname,oldhelp:string[80];
 
- oldx,oldy:byte;                 {window stuff}
- wmin,wmax:word;
-
- save,store,scratch:screen;
-
- cfgfile:file of config;
  logfile:text;
 
+ pick:procedure(act:pickact;var s:string;var n:longint);
+ pickletter:array ['A'..'Z'] of longint;
+
 {**************************************************************************}
 
-function ucase(s:string):string;
+procedure encrconf;
 
 var
- temp:string;
- loop:byte;
+ loop:word;
 
 begin
- temp:='';
- for loop:=1 to length(s) do temp:=temp+upcase(s[loop]);
- ucase:=temp;
-end;
-
-{**************************************************************************}
-
-procedure beep;
-
-begin
- if setup.sound then write(#7);
-end;
-
-{**************************************************************************}
-
-function stringof(c:char;l:byte):string;
-
-var
- s:string;
-
-begin
- s[0]:=chr(l);
- fillchar(s[1],l,c);
- stringof:=s;
-end;
-
-{**************************************************************************}
-
-procedure cursoroff;
-
-begin
- asm
-  mov ah,1
-  mov cx,$2020
-  int $10
- end;
- cursor:=false;
-end;
-
-{**************************************************************************}
-
-procedure cursoron;
-
-begin
- asm
-  mov ah,1
-  mov cx,cursor_spec
-  int $10
- end;
- cursor:=true;
-end;
-
-{**************************************************************************}
-
-procedure centre(s:string);
-
-begin
- gotoxy(succ(((succ(lo(windmax)-lo(windmin)))-length(s)) div 2),wherey);
- write(s);
-end;
-
-{**************************************************************************}
-
-function exist(s:string):boolean;
-
-var
- f:file;
-
-begin
- assign(f,s);
- reset(f);
- close(f);
- exist:=(ioresult=0);
-end;
-
-{**************************************************************************}
-
-procedure swapem(var save:screen);
-
-begin
- scratch:=dosptr^;
- dosptr^:=save;
- save:=scratch;
+ randseed:=18572;
+ for loop:=1 to sizeof(config) do security[loop]:=security[loop] xor random(256);
 end;
 
 {**************************************************************************}
@@ -184,19 +88,14 @@ var
 
 begin
  gettime(hour,min,sec,hun);
- str(hour:2,s1);
- str(min:2,s2);
- str(sec:2,s3);
- if s1[1]=space then s1[1]:='0';
- if s2[1]=space then s2[1]:='0';
- if s3[1]=space then s3[1]:='0';
+ s1:=itos(hour,2);
+ s2:=itos(min,2);
+ s3:=itos(sec,2);
  time:=s1+':'+s2+':'+s3;
  getdate(year,month,day,dow);
- str(day:2,s1);
- str(month:2,s2);
- str(year:4,s3);
- if s1[1]=space then s1[1]:='0';
- if s2[1]=space then s2[1]:='0';
+ s1:=itos(day,2);
+ s2:=itos(month,2);
+ s3:=itos(year,4);
  date:=s1+'/'+s2+'/'+s3;
  temp:=' '+date+' ³ '+menuname;
  while length(temp)<71 do temp:=temp+' ';
@@ -206,7 +105,7 @@ end;
 
 {**************************************************************************}
 
-procedure status;
+procedure astatus; far;
 
 var
  a:byte;
@@ -231,7 +130,7 @@ begin
   a:=textattr;
   textattr:=112;
   gotoxy(1,25);
-  write(helpline);
+  write(' ',helpline);
   clreol;
   gotoxy(1,1);
   centre(statusline);
@@ -245,175 +144,57 @@ end;
 
 {**************************************************************************}
 
-{$I crc16.inc}
+{$I apcrc.inc}
 
 {**************************************************************************}
 
-procedure log(var f:text;s:string);
+procedure log(s:string);
+
+var
+ temp:string;
 
 begin
- writeln(s);
- writeln(f,s);
- status;
+ temp:=getstatus;
+ if not datelogged then begin
+  writeln(logfile,firetime+' - APCONFIG started ('+date+')');
+  datelogged:=true;
+ end;
+ s:=time+' '+s;
+ if s[10]<>'+' then writeln(s);
+ writeln(logfile,s);
 end;
 
 {**************************************************************************}
 
-{$F+}procedure exitroutine;{$F-}
+procedure exitroutine; far;
 
 begin
- clrscr;
+ exitproc:=exitsave;
+ textattr:=7;
  window(1,1,80,25);
- normvideo;
- clrscr;
+ gotoxy(1,25);
+ clreol;
  cursoron;
  if erroraddr<>nil then begin
-  str(exitcode,s);
-  log(logfile,'! Abnormal program termination. Please report error '+s);
+  s:=runerror(exitcode);
+  log('! Please report '+s);
   writeln;
+  erroraddr:=nil;
  end;
- writeln(logfile);
- writeln(logfile,'  APCONFIG exited at '+time+' on the '+date);
  close(logfile);
- exitproc:=exitsave;
+ ioerror:=ioresult;
+ gotoxy(1,24);
 end;
 
 {**************************************************************************}
 
-procedure anykey(outer:byte;short:boolean);
-
-var
- inner:word;
- c:char;
- s:string[2];
- old:byte;
+procedure errcheck(s:string);
 
 begin
- cursoroff;
- old:=textattr;
- textcolor(setup.bclr);
- textbackground(setup.fclr);
- writeln;
- repeat
-  str(outer:2,s);
-  if s[1]=' ' then s[1]:='0';
-  if short then centre('Press any key ('+s+')') else
-  centre('Press any key to continue (or wait '+s+' seconds)');
-  inner:=0;
-  repeat
-   delay(1);
-   inc(inner);
-  until (inner=1000) or keypressed;
-  dec(outer);
- until (outer=0) or keypressed;
- while keypressed do c:=readkey;
- textattr:=7;
- if wherey=25 then clreol;
- textattr:=old;
- cursoron;
-end;
-
-{*************************************************************************}
-
-procedure openwin(left,up,right,down:byte;
-                  var save:screen;
-                  var oldx,oldy:byte;
-                  border:boolean;
-                  title:string);
-
-var
- loop:word;
- box:frametype;
-
-begin
- oldcolour:=textattr;
- save:=dosptr^;
- oldx:=wherex;
- oldy:=wherey;
- wmin:=windmin;
- wmax:=windmax;
- if border then begin
-  textcolor(setup.wfclr);
-  textbackground(setup.wbclr);
- end else normvideo;
- window(left,succ(up),right,succ(down));
- clrscr;
- windmin:=wmin;
- windmax:=wmax;
- box:=frame[setup.winstyle];
- if border then begin
-  gotoxy(pred(left),pred(up));
-  writeln(box[1],stringof(box[2],succ(right-left)),box[3]);
-  if title<>'' then begin
-
-   gotoxy(succ(left)+((right-left)-(length(title)+4)) shr 1,pred(up));
-
-   write(box[7],space,title,space,box[8]);
-  end;
-  for loop:=up to down do begin
-   gotoxy(pred(left),loop);
-   write(box[4]);
-   gotoxy(succ(right),loop);
-   write(box[4]);
-  end;
-  gotoxy(pred(left),succ(down));
-  write(box[5],stringof(box[2],succ(right-left)),box[6]);
- end;
- window(left,succ(up),right,succ(down));
-end;
-
-{**************************************************************************}
-
-procedure closewin(var save:screen;x,y:byte);
-
-var
- loop:word;
-
-begin
- swapem(save);
- windmin:=wmin;
- windmax:=wmax;
- status;
- gotoxy(x,y);
- textattr:=oldcolour;
-end;
-
-{**************************************************************************}
-
-procedure onlinehelp(title:string);
-
-var
- f:text;
- c:char;
- stopnow:boolean;
-
-begin
- stopnow:=false;
- assign(f,homepath+curname+'.HLP');
- reset(f);
- if ioresult=0 then begin
-  repeat
-   readln(f,s);
-  until (pos('.'+title,s)>0) or seekeof(f);
-  if not(eof(f)) then begin
-   openwin(3,3,78,23,save,oldx,oldy,true,title+' Help');
-   repeat
-    readln(f,s);
-    if s='.more' then begin
-     write(' * Press any key for more *');
-     repeat status until keypressed;
-     c:=readkey;
-     if c=ESC then stopnow:=true;
-     clrscr;
-    end else if s<>'.' then writeln(space,s);
-   until (eof(f)) or (s='.') or (stopnow);
-   close(f);
-   if not stopnow then begin
-    repeat status until keypressed;
-    while keypressed do c:=readkey;
-   end;
-   closewin(save,oldx,oldy);
-  end;
+ ioerror:=ioresult;
+ if ioerror<>0 then begin
+  log('! '+runerror(ioerror)+s);
+  halt;
  end;
 end;
 
@@ -422,14 +203,11 @@ end;
 procedure menu(var default:byte;max:byte;getout:byte);
 
 var
- loop:byte;
- width,start:byte;
- x,y:byte;
- wmin,wmax:word;
+ loop,x,y,oldef,oldval,width,start:byte;
  c:char;
  endnow:boolean;
- oldef,oldval,oldcol:byte;
- s:string;
+ s,hotkey:string;
+ handle:word;
 
 begin
  cursoroff;
@@ -438,54 +216,48 @@ begin
  width:=0;
  for loop:=0 to max do
   if length(option[loop])>width then width:=length(option[loop]);
- while width<length(option[0])+4 do inc(width);
  inc(width);
- start:=(80-width) div 2;
- openwin(start,3,start+width,max+4,store,x,y,true,option[0]);
+ start:=(80-width) shr 1;
+ handle:=openwin(start,3,start+width,max+4,option[0]);
  for loop:=1 to max do begin
   gotoxy(2,succ(loop));
-  writeln(option[loop]);
+  textcolor(colset.wsclr);
+  write(option[loop][1]);
+  textcolor(colset.wfclr);
+  writeln(copy(option[loop],2,pred(length(option[loop]))));
  end;
+ hotkey[0]:=#20;
+ for loop:=1 to max do if option[loop]<>'' then hotkey[loop]:=upcase(option[loop][1])
+                                           else hotkey[loop]:='þ';
+ for loop:=succ(max) to 20 do hotkey[loop]:='þ';
  repeat
-
   gotoxy(1,succ(default));
-  textcolor(setup.hfclr);
-  textbackground(setup.hbclr);
+  textcolor(colset.hfclr);
+  textbackground(colset.hbclr);
   clreol;
-  write(space+option[default]);
-  textcolor(setup.wfclr);
-  textbackground(setup.wbclr);
+  write(' ',option[default]);
+  textcolor(colset.wfclr);
+  textbackground(colset.wbclr);
 
   oldef:=default;
   helpline:=ophelp[default];
   repeat status until keypressed;
-  c:=readkey;
-  if c=cr then endnow:=true;
-  if c=esc then begin
+  c:=upcase(readkey);
+  if c=#13 then endnow:=true;
+  if c=#27 then begin
    endnow:=true;
    default:=getout;
   end;
-  if c=nul then case readkey of
+  s:=hotkey;
+  for loop:=1 to default do s[loop]:='þ';
+  if pos(c,s)>0 then default:=pos(c,s);
+  if (default=oldef) and (pos(c,hotkey)>0) then default:=pos(c,hotkey);
+  if c=#0 then case readkey of
    #72:dec(default);
    #80:inc(default);
    #71:default:=1;
    #79:default:=max;
-   #24:begin
-        swapem(save);
-        repeat until keypressed;
-        while keypressed do c:=readkey;
-        swapem(save);
-       end;
-   #59:begin
-        oldcol:=oldcolour;
-        wmin:=windmin;
-        wmax:=windmax;
-        window(1,2,80,24);
-        onlinehelp(option[0]);
-        oldcolour:=oldcol;
-        windmin:=wmin;
-        windmax:=wmax;
-       end;
+   #59:onlinehelp(option[0]);
    else;
   end;
   if not endnow then begin
@@ -494,78 +266,237 @@ begin
    if oldef<>default then begin
     gotoxy(1,succ(oldef));
     clreol;
-    write(space+option[oldef]);
+    write(' ');
+    textcolor(colset.wsclr);
+    write(option[oldef][1]);
+    textcolor(colset.wfclr);
+    write(copy(option[oldef],2,pred(length(option[oldef]))));
    end;
   end;
  until endnow;
- closewin(store,x,y);
- cursoron;
+ closewin(handle);
 end;
 
 {**************************************************************************}
 
-procedure getstring(var s:string;max:byte;title:string);
+function io(s:string):boolean;
 
 var
- x,y,edge:byte;
- len:byte absolute s;
- old:string;
- c:char;
- fkey:boolean;
+ temp:boolean;
 
 begin
- edge:=(76-max) shr 1;
- if max<length(title) then edge:=(70-length(title)) shr 1;
- openwin(2+edge,5,78-edge,7,save,oldx,oldy,true,title);
- gotoxy(1,2);
- old:=s;
- write(s);
- y:=wherey;
- x:=wherex;
- repeat
-  gotoxy(x,y);
-  repeat status until keypressed;
-  fkey:=false;
-  c:=readkey;
-  case c of
-     #0:if keypressed then fkey:=true;
-     #8:if x>1 then begin
-         delete(s,pred(x),1);
-         dec(x);
-         gotoxy(1,y);
-         write(s);
-         clreol;
-        end else beep;
-   #32..#126:if len<max then begin
-         insert(c,s,x);
-         inc(x);
-         if x<=len then begin
-          gotoxy(1,y);
-          write(s);
-         end else write(c);
-        end else beep;
-   #13,#27:;
-   else beep;
-  end;
-  if fkey then begin
-   c:=readkey;
-   case c of
-    #83:if x<=len then begin
-         delete(s,x,1);
-         gotoxy(1,y);
-         write(s);
-         clreol;
-        end else beep;
-    #75:if x>1 then dec(x) else beep;
-    #77:if x<=len then inc(x) else beep;
-    #71:x:=1;
-    #79:x:=succ(len);
-    else beep;
+ ioerror:=ioresult;
+ temp:=(ioerror=0);
+ if not temp then winmsg('Error',runerror(ioerror)+' '+s);
+ io:=temp;
+end;
+
+{**************************************************************************}
+
+procedure pickdial(act:pickact;var s:string;var n:longint); far;
+
+begin
+ s:='';
+ case act of
+  seekto:seek(dialfile,n);
+  readrec:begin
+           read(dialfile,currsite);
+           s:=currsite.name;
+          end;
+  retmax:n:=filesize(dialfile);
+  else;
+ end;
+end;
+
+{**************************************************************************}
+
+procedure pickevent(act:pickact;var s:string;var n:longint); far;
+
+begin
+ s:='';
+ case act of
+  seekto:seek(schedfile,n);
+  readrec:begin
+           read(schedfile,currevent);
+           s:=currevent.name;
+          end;
+  retmax:n:=filesize(schedfile);
+  else;
+ end;
+end;
+
+{**************************************************************************}
+
+procedure pickmodem(act:pickact;var s:string;var n:longint); far;
+
+begin
+ s:='';
+ case act of
+  seekto:seek(modemfile,n);
+  readrec:begin
+           read(modemfile,currmodem);
+           s:=currmodem.name;
+          end;
+  retmax:n:=filesize(modemfile);
+  else;
+ end;
+end;
+
+{**************************************************************************}
+
+procedure pickinit;
+
+var
+ max,loop,temp:longint;
+ c:char;
+ s:string;
+
+begin
+ fillchar(pickletter,sizeof(pickletter),$FF);
+ temp:=0;
+ pick(seekto,s,temp);
+ pick(retmax,s,max);
+ for loop:=0 to pred(max) do begin
+  pick(readrec,s,temp);
+  c:=upcase(s[1]);
+  if pickletter[c]=-1 then pickletter[c]:=loop;
+ end;
+end;
+
+{**************************************************************************}
+
+function picklist(title:string):longint;
+
+var
+ oldef,default,oldfirst,first,max,last,temp,loop:longint;
+ handle:word;
+ s,name:string;
+ c:char;
+ endnow:boolean;
+
+begin
+ pick(retmax,s,last); {Get last entry in the required file}
+ if last>0 then begin
+  endnow:=false;
+  if last>=18 then max:=17 else max:=pred(last);
+  handle:=openwin(18,3,62,max+5,title);
+  cursoroff;
+  oldfirst:=1;
+  first:=0;
+  default:=0;
+  repeat
+
+   if oldfirst<>first then begin
+    gotoxy(1,1);
+    clreol;
+    pick(seekto,s,first);
+    for loop:=first to max do begin
+     writeln;
+     pick(readrec,name,temp);
+     option[loop-first]:=name;
+     clreol;
+     centre(name);
+    end;
+    oldfirst:=first;
+    writeln;
+    clreol;
    end;
+
+   gotoxy(1,default+2-first);
+   textcolor(colset.hfclr);
+   textbackground(colset.hbclr);
+   clreol;
+   centre(option[default-first]);
+   textcolor(colset.wfclr);
+   textbackground(colset.wbclr);
+
+   oldef:=default;
+   repeat status until keypressed;
+   c:=upcase(readkey);
+   if c=#13 then endnow:=true;
+   if c=#27 then begin
+    endnow:=true;
+    default:=-1;
+   end;
+   if c in ['A'..'Z'] then begin
+    if pickletter[c]<>-1 then default:=pickletter[c];
+    if default in [first..max] then
+     {Don't do anything special}
+    else
+    if last<=18 then begin
+     first:=0;
+     max:=last;
+    end else begin
+     first:=default;
+     max:=first+17;
+     while max>=last do begin
+      dec(first);
+      dec(max);
+     end;
+    end;
+    if first=oldfirst then c:=' ';
+   end; 
+   if c=#0 then case readkey of
+    #72:begin
+         dec(default);
+         if (default<first) and (first>0) then begin
+          dec(max);
+          dec(first);
+         end;
+        end;
+    #80:begin
+         inc(default);
+         if (default>max) and (max<pred(last)) then begin
+          inc(max);
+          inc(first);
+         end;
+        end;
+    #71:default:=first;
+    #79:default:=max;
+    #81:begin
+         loop:=0;
+         while (max<pred(last)) and (loop<18) do begin
+          inc(first);
+          inc(max);
+          inc(default);
+          inc(loop);
+         end;
+         if oldef<first then oldef:=first;
+        end;
+    #73:begin
+         loop:=0;
+         while (first>0) and (loop<18) do begin
+          dec(first);
+          dec(max);
+          dec(default);
+          inc(loop);
+         end;
+         if oldef>max then oldef:=max;
+        end;
+    #59:onlinehelp(title);
+    else;
+   end;
+   if not ((endnow) or (c in ['A'..'Z'])) then begin
+    if default<first then default:=max else
+    if default>max then default:=first;
+    if oldef<>default then begin
+     gotoxy(1,oldef+2-first);
+     clreol;
+     centre(option[oldef-first]);
+    end;
+   end;
+  until endnow;
+  closewin(handle);
+  if default>=0 then begin
+   pick(seekto,s,default);
+   pick(readrec,s,temp);
+   pick(seekto,s,default);
   end;
- until c in [#27,#13];
- if c=#27 then s:=old;
- closewin(save,oldx,oldy);
+  picklist:=default;
+ end else begin
+  beep;
+  picklist:=-1;
+ end;
 end;
 
 {**************************************************************************}
@@ -573,19 +504,340 @@ end;
 procedure copyright;
 
 begin
+ window(8,15,80,24);
+ writeln('ÚÄÄÄÄÄÄ· ÚÄÄÄÄÄ· ÚÄÄÄÄÄ· ÚÄÄÄÄÄ· ÚÄÄÄÄ·ÚÄ· ÚÄÄÄÄÄ· ÚÄÄÄ· ÚÄÄÄÄÄÄ·');
+ writeln('³ ÖÄÄ¿ º ³ ÖÄ¿ º ³ ÖÄ¿ º ³ ÖÄ¿ º ³ Ö¿ º³ º ³ ÖÄÄÄ½ À¿ Ö½ ³ ÖÄÄÄÄ½');
+ writeln('³ ÓÄÄÙ º ³ ÓÄÙ º ³ º ÀÄ½ ³ º ³ º ³ º³ º³ º ³ ÓÄ·    ³ º  ³ º ÚÄÄ·');
+ writeln('³ ÖÄÄ¿ º ³ ÖÄÄÄ½ ³ º ÚÄ· ³ º ³ º ³ º³ º³ º ³ ÖÄ½    ³ º  ³ º À¿ º');
+ writeln('³ º  ³ º ³ º     ³ ÓÄÙ º ³ ÓÄÙ º ³ º³ ÓÙ º ³ º     ÚÙ Ó· ³ ÓÄÄÙ º');
+ writeln('ÀÄ½  ÀÄ½ ÀÄ½     ÀÄÄÄÄÄ½ ÀÄÄÄÄÄ½ ÀÄ½ÀÄÄÄÄ½ ÀÄ½     ÀÄÄÄ½ ÀÄÄÄÄÄÄ½');
+ window(1,1,80,24);
  gotoxy(1,22);
- centre('APCONFIG v'+version+', ('+lastrev+') Copyright (c) 1991 Michael E. Ralphson');
+ centre('APCONFIG version '+version); writeln;
+ centre('Copyright (c) 1991 - 1993 Michael E. Ralphson, All Rights Reserved');
 end;
 
 {**************************************************************************}
 
-const
- onoff:array [false..true] of string[2]=('ff','n');
+procedure comports;
+
+var
+ s:string;
+ handle:word;
+ com:array [1..4] of word absolute $40:0;
+ ok:array  [1..6] of boolean;
+ loop:byte;
+
+begin
+ handle:=openwin(25,3,55,12,'Com-Ports');
+ writeln;
+ fillchar(ok,6,0);
+ for loop:=1 to 4 do begin
+  case com[loop] of
+   $3F8:ok[1]:=true;
+   $2F8:ok[2]:=true;
+   $3E8:ok[3]:=true;
+   $3F8:ok[4]:=true;
+   $270:ok[6]:=true;
+   else;
+  end;
+  if com[loop]=setup.com5.base then ok[5]:=true;
+ end;
+ for loop:=1 to 6 do begin
+  str(loop,s);
+  if ok[loop] then centre('COM '+s+' is Installed')
+   else centre('COM '+s+' was not found');
+  writeln;
+ end;
+ anykey(9,true);
+ closewin(handle);
+end;
+
+{**************************************************************************}
+
+procedure logmaint;
+
+begin
+end;
+
+{**************************************************************************}
+
+procedure delrec(s:string;psn:longint;recsize:word);
+
+var
+ f:file;
+ buffer:array [1..4096] of byte;
+ bread:word;
+
+begin
+ psn:=psn*recsize;
+ assign(f,s);
+ reset(f,1);
+ if ioresult=0 then begin
+  repeat
+   seek(f,psn+recsize);
+   blockread(f,buffer,4096,bread);
+   seek(f,psn);
+   blockwrite(f,buffer,bread);
+   inc(psn,bread);
+  until bread<4096;
+  truncate(f);
+  close(f);
+ end;
+end;
+
+{**************************************************************************}
+
+procedure editmodem(title:string;seekto:longint);
+
+begin
+ with currmodem do begin
+  newdentry('APNS Modem type',1,'S',@name,40,0,'Name of this modem-type, manufacturer, speed etc');
+  newdentry('Initialisation ',2,'S',@cmdinit,40,0,'Command necessary to initialise the modem');
+  newdentry('Dial prefix    ',3,'S',@cmdpredial,40,0,'Modem dial prefix, use ATDP for Pulse, ATDT for Tone');
+  newdentry('Auto-answer on ',4,'S',@cmdanswer,40,0,'Command necessary to enable auto-answer');
+  newdentry('Hang up connect',5,'S',@cmdhangup,40,0,'Command necessary to hang-up the modem');
+ end;
+ dataentry(5,1,title);
+ seek(modemfile,seekto);
+ write(modemfile,currmodem);
+ if seekto=last then inc(last);
+end;
+
+{**************************************************************************}
+
+procedure addmodem;
+
+begin
+ fillchar(currmodem,sizeof(currmodem),0);
+ currmodem.cmdinit:='ATZ|~~~AT&C1|';
+ currmodem.cmdhangup:='~~~+++~~ATH0|';
+ currmodem.cmdpredial:='ATDT';
+ currmodem.cmdanswer:='ATS0=1|';
+ editmodem('Add a Modem',last);
+end;
+
+{**************************************************************************}
+
+procedure delmodem(filename:string);
+
+var
+ handle:word;
+ picked:longint;
+ c:char;
+
+begin
+ picked:=picklist('Delete');
+ if picked>=0 then begin
+  handle:=openwin(2,5,78,7,'Confirm Action');
+  centre(#10'Do you want to delete '+currmodem.name+' (y/N) ?');
+  c:=upcase(readkey);
+  closewin(handle);
+  if pos(c,yeskey)>0 then begin
+   close(modemfile);
+   delrec(filename,picked,sizeof(currmodem));
+   reset(modemfile);
+   dec(last);
+   log('+ Modem '+currmodem.name+' deleted');
+  end;
+ end;
+end;
+
+{**************************************************************************}
+
+procedure sortmodems;
+
+type
+ slist=array [1..300] of modementry;
+
+var
+ slptr:^slist;
+ loop,howmany,handle:word;
+
+{**************************************************************************}
+
+procedure qsort(l,r:integer);
+
+var
+ i,j:integer;
+ x,y:modementry;
+
+begin
+ i:=l;
+ j:=r;
+ x:=slptr^[(l+r) DIV 2];
+ repeat
+  while slptr^[i].name<x.name do inc(i);
+  while x.name<slptr^[j].name do dec(j);
+  if i<=j then begin
+   y:=slptr^[i];
+   slptr^[i]:=slptr^[j];
+   slptr^[j]:=y;
+   inc(i);
+   dec(j);
+  end;
+ until i>j;
+ if l<j then qsort(l,j);
+ if i<r then qsort(i,r);
+end;
+
+{**************************************************************************}
+
+begin
+ reset(modemfile);
+ howmany:=filesize(modemfile);
+ if mem_avail>=4096 then begin
+  handle:=mem_alloc(4096);
+  slptr:=ptr(handle,0);
+  for loop:=1 to howmany do read(modemfile,slptr^[loop]);
+  qsort(1,howmany);
+  reset(modemfile);
+  for loop:=1 to howmany do write(modemfile,slptr^[loop]);
+  mem_free(handle);
+ end else winmsg('Error','Not enough memory for sort');
+end;
+
+{**************************************************************************}
+
+procedure outputlist;
+
+var
+ filename:string;
+ max,loop:longint;
+ f:text;
+
+begin
+ reset(modemfile);
+ max:=filesize(modemfile);
+ filename:='';
+ getstring(filename,60,'Output Filename');
+ filename:=fexpand(filename);
+ assign(f,filename);
+ if exist(filename) then append(f) else
+  rewrite(f);
+ if io(filename) then begin
+  for loop:=1 to max do begin
+   read(modemfile,currmodem);
+   writeln(f,currmodem.name);
+   writeln(f,currmodem.cmdinit);
+   writeln(f);
+  end;
+  close(f);
+  reset(modemfile);
+ end;
+end;
+
+{**************************************************************************}
+
+procedure importlist;
+
+var
+ filename:string;
+ max,loop:longint;
+ f:text;
+
+begin
+ max:=filesize(modemfile);
+ seek(modemfile,max);
+ filename:='';
+ getstring(filename,60,'Import Filename');
+ filename:=fexpand(filename);
+ assign(f,filename);
+ reset(f);
+ if io(filename) then begin
+  while not eof(f) do begin
+   fillchar(currmodem,sizeof(currmodem),0);
+   readln(f,currmodem.name);
+   readln(f,currmodem.cmdinit);
+   if not eof(f) then readln(f);
+   currmodem.cmdpredial:=setup.cmdpredial;
+   currmodem.cmdanswer :='ATS0=1|';
+   currmodem.cmdhangup :='~~~+++~~ATH0=1|';
+   write(modemfile,currmodem);
+  end;
+  close(f);
+  reset(modemfile);
+  last:=filesize(modemfile);
+ end;
+end;
+
+{**************************************************************************}
+
+procedure modemmenu(auto:byte);
+
+var
+ omname:string[80];
+ s:string;
+ mmchoice:byte;
+ picked:longint;
+
+begin
+ @pick:=@pickmodem;
+ omname:=menuname;
+ s:=homepath+'APNS.MOD';
+ assign(modemfile,s);
+ if exist(s) then reset(modemfile) else rewrite(modemfile);
+ if io(s) then begin
+  last:=filesize(modemfile);
+  mmchoice:=1;
+  repeat
+   pickinit;
+   if auto=0 then menuname:=omname+' \ MODEMS';
+   status;
+   option[0]:='Modems';
+   option[1]:='Add Modem';
+   option[2]:='Edit Modem';
+   option[3]:='Delete Modem';
+   option[4]:='Sort List';
+   option[5]:='Output Text';
+   option[6]:='Import Text';
+   ophelp[1]:='Add a new modem to the APNS list';
+   ophelp[2]:='Edit or view a defined modem entry';
+   ophelp[3]:='Delete a modem from the APNS list';
+   ophelp[4]:='Alphabetically sort the modem list';
+   ophelp[5]:='Output the APNS Modem List to a text file';
+   ophelp[6]:='Import the APNS Modem List from a text file';
+   if auto=0 then menu(mmchoice,6,0) else mmchoice:=auto;
+   if mmchoice<>1 then begin
+    menuname:=menuname+' \ CHOOSE MODEM';
+    helpline:='Use Up, Down, PgUp, PgDn, Home and End to locate modem';
+   end;
+   case mmchoice of
+    255:if last>0 then begin
+       picked:=picklist('Select');
+       menuname:=menuname+' \ MODEMS';
+       if picked>=0 then begin
+        setup.cmdinit:=currmodem.cmdinit;
+        setup.modemname:=currmodem.name;
+        setup.cmdpredial:=currmodem.cmdpredial;
+        setup.cmdanswer:=currmodem.cmdanswer;
+        setup.cmdhangup:=currmodem.cmdhangup;
+       end;
+      end else winmsg('Error','There are no modems to select from');
+    1:addmodem;
+    2:if last>0 then begin
+       picked:=picklist('Edit');
+       menuname:=omname+' \ MODEMS';
+       if picked>=0 then editmodem('Edit Modem',picked);
+      end else winmsg('Error','There are no modems to edit');
+    3:if last>0 then delmodem(s) else winmsg('Error','There are no modems to delete');
+    4:sortmodems;
+    5:outputlist;
+    6:importlist;
+    else;
+   end;
+   if auto<>0 then mmchoice:=0;
+  until mmchoice=0;
+  close(modemfile);
+ end;
+end;
+
+{**************************************************************************}
 
 procedure screensetup;
 
 var
- colour,sschoice:byte;
+ x,y,colour,sschoice:byte;
 
 begin
  sschoice:=1;
@@ -597,87 +849,87 @@ begin
   option[2]:='Main background colour';
   option[3]:='Window foreground colour';
   option[4]:='Window background colour';
-  option[5]:='Window border style';
-  option[6]:='Highlight foreground colour';
-  option[7]:='Highlight background colour';
-  option[8]:='Sound O'+onoff[setup.sound];
-  option[9]:='Direct screen writes O'+onoff[setup.direct];
-  option[10]:='Snow checking O'+onoff[setup.snow];
+  option[5]:='Menu option colour';
+  option[6]:='Window border style';
+  option[7]:='Highlight foreground colour';
+  option[8]:='Highlight background colour';
+  option[9]:='Sound '+onoff[setup.sound];
+  option[10]:='Direct screen writes '+onoff[setup.directvideo];
+  option[11]:='Snow checking '+onoff[setup.snow];
   ophelp[1]:='Change standard text foreground colour';
   ophelp[2]:='Change standard text background colour';
   ophelp[3]:='Change window foreground colour';
   ophelp[4]:='Change window background colour';
-  ophelp[5]:='Change window border characters';
-  ophelp[6]:='Change highlight bar foreground colour';
-  ophelp[7]:='Change highlight bar background colour';
-  ophelp[8]:='Toggle on / off bells and sound effects';
-  ophelp[9]:='Turn off (BIOS writes) if direct writes cause problems';
-  ophelp[10]:='Turn on snow checking for IBM made CGA adapters';
-  colour:=(setup.bclr shl 4) or setup.fclr;
-  for loop:=81 to 1920 do dosptr^[loop shl 1]:=colour;
-  textattr:=colour;
-  menu(sschoice,10,0);
+  ophelp[5]:='Change menu option letter colour';
+  ophelp[6]:='Change window border characters';
+  ophelp[7]:='Change highlight bar foreground colour';
+  ophelp[8]:='Change highlight bar background colour';
+  ophelp[9]:='Toggle on / off bells and sound effects';
+  ophelp[10]:='Turn off (BIOS writes) if direct writes cause problems';
+  ophelp[11]:='Turn on snow checking for IBM made CGA adapters';
+  menu(sschoice,11,0);
   case sschoice of
-   1:setup.fclr:=succ(setup.fclr) and 15;
-   2:setup.bclr:=succ(setup.bclr) and 7;
-   3:setup.wfclr:=succ(setup.wfclr) and 15;
-   4:setup.wbclr:=succ(setup.wbclr) and 7;
-   5:setup.winstyle:=succ(setup.winstyle) mod 10;
-   6:setup.hfclr:=succ(setup.hfclr) and 15;
-   7:setup.hbclr:=succ(setup.hbclr) and 7;
-   8:setup.sound:=not setup.sound;
-   9:begin
-      setup.direct:=not setup.direct;
-      directvideo:=setup.direct;
+   1:colset.fclr:=succ(colset.fclr) and 15;
+   2:colset.bclr:=succ(colset.bclr) and 7;
+   3:colset.wfclr:=succ(colset.wfclr) and 15;
+   4:colset.wbclr:=succ(colset.wbclr) and 7;
+   5:colset.wsclr:=succ(colset.wsclr) and 15;
+   6:setup.winstyle:=succ(setup.winstyle) mod 10;
+   7:colset.hfclr:=succ(colset.hfclr) and 15;
+   8:colset.hbclr:=succ(colset.hbclr) and 7;
+   9:setup.sound:=not setup.sound;
+  10:begin
+      setup.directvideo:=not setup.directvideo;
+      directvideo:=setup.directvideo;
      end;
-   10:begin
-       setup.snow:=not setup.snow;
-       checksnow:=setup.snow;
-      end;
+  11:begin
+      setup.snow:=not setup.snow;
+      checksnow:=setup.snow;
+     end;
    else;
+  end;
+  if (sschoice=1) or (sschoice=2) then begin
+   colour:=(colset.bclr shl 4) or colset.fclr;
+   for y:=2 to 24 do
+    for x:=1 to 80 do dosptr^[y,x].at:=colour;
+   textattr:=colour;
   end;
  until sschoice=0;
 end;
 
 {**************************************************************************}
 
-procedure filesetup;
-
-var
- temp:string;
- fschoice:byte;
+procedure corridazo(var s:string);
 
 begin
- fschoice:=1;
+ if s[length(s)]<>'\' then s:=s+'\';
+ fsplit(fexpand(s),dir,name,ext);
+ if length(dir)>3 then delete(dir,length(dir),1);
+ s:=dir;
+end;
+
+{ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ}
+
+procedure filesetup;
+
+begin
  menuname:=menuname+' \ FILE SETUP';
- status;
- repeat
-  option[0]:='File Setup';
-  option[1]:='Upload path  : '+setup.updir;
-  option[2]:='Download path: '+setup.downdir;
-  ophelp[1]:='Directory for outgoing files';
-  ophelp[2]:='Directory for incoming files';
-  menu(fschoice,2,0);
-  case fschoice of
-   1:begin
-      getstring(setup.updir,40,'Upload Path');
-      if setup.updir[length(setup.updir)]<>'\'
-       then setup.updir:=setup.updir+'\';
-      fsplit(fexpand(setup.updir),dir,name,ext);
-      if length(dir)>3 then delete(dir,length(dir),1);
-      setup.updir:=dir;
-     end;
-   2:begin
-      getstring(setup.downdir,40,'Download Path');
-      if setup.downdir[length(setup.downdir)]<>'\'
-       then setup.downdir:=setup.downdir+'\';
-      fsplit(fexpand(setup.downdir),dir,name,ext);
-      if length(dir)>3 then delete(dir,length(dir),1);
-      setup.downdir:=dir;
-     end;
-   else;
-  end;
- until fschoice=0;
+ newdentry('Outgoing Files',1,'S',@setup.updir,40,0,'Directory for outgoing files');
+ newdentry('Incoming Files',2,'S',@setup.downdir,40,0,'Directory for incoming files');
+ dataentry(2,1,'File Setup');
+end;
+
+{**************************************************************************}
+
+procedure checkmod;
+
+var
+ s:string;
+
+begin
+ s:=setup.modemname;
+ if pos('Modified ',s)=0 then s:='Modified '+s;
+ move(s,setup.modemname,40);
 end;
 
 {**************************************************************************}
@@ -688,119 +940,62 @@ var
  mschoice:byte;
  s:string;
  loop:byte;
+ i:integer;
+ omn:string;
 
 begin
- menuname:=menuname+' \ APNS SETUP';
+ menuname:=menuname+' \ MODEM SETUP';
+ omn:=menuname;
  mschoice:=1;
  status;
  repeat
-  option[0]:='Apns Setup';
-  option[1]:='Initialise : '+setup.cmdinit;
-  option[2]:='Hang up    : '+setup.cmdhangup;
-  option[3]:='Dial prefix: '+setup.cmdpredial;
-  option[4]:='Answer call: '+setup.cmdanswer;
-  str(setup.dialtime,s);
-  option[5]:='Dial time : '+s;
-  str(setup.dialpause,s);
-  option[6]:='Dial pause: '+s;
-  str(setup.maxattempts,s);
-  option[7]:='Maximum re-dials: '+s;
-  str(setup.dialstart:2,s);
-  if s[1]=' ' then s[1]:='0';
-  option[8]:='Make calls from (hour):  '+s;
-  str(setup.dialfinish:2,s);
-  if s[1]=' ' then s[1]:='0';
-  option[9]:='Make calls until (hour): '+s;
-  str(setup.waitstart:2,s);
-  if s[1]=' ' then s[1]:='0';
-  option[10]:='Answer calls from (hour):  '+s;
-  str(setup.waitfinish:2,s);
-  if s[1]=' ' then s[1]:='0';
-  option[11]:='Answer calls until (hour): '+s;
-  option[12]:='Site Identification: '+setup.site;
-  str(setup.mnptime:2,s);
-  if s[1]=' ' then s[1]:='0';
-  option[13]:='Connect delay time:  '+s;
-  option[14]:='Dial action: '+setup.okdial;
-  option[15]:='Wait action: '+setup.okwait;
-  option[16]:='Exit after one call: O'+onoff[setup.exitafter];
-  option[17]:='Password: '+setup.password;
-  ophelp[1]:='Modem initialisation command';
-  ophelp[2]:='Modem hang up command';
-  ophelp[3]:='Default dialling prefix';
-  ophelp[4]:='Modem auto-answer command';
-  ophelp[5]:='Time to wait for a connect (seconds)';
-  ophelp[6]:='Pause between consecutive dials of one number (minutes)';
-  ophelp[7]:='Maximum number of re-dials of one site in an evening';
-  ophelp[8]:='APNS auto-dial window start hour (before midnight)';
-  ophelp[9]:='APNS auto-dial window finish hour (after midnight)';
-  ophelp[10]:='APNS auto-answer window start hour (before midnight)';
-  ophelp[11]:='APNS auto-answer window finish hour (after midnight)';
-  ophelp[12]:='Site Identification code, 4 characters';
-  ophelp[13]:='Number of seconds to delay before handshaking';
-  ophelp[14]:='Command to execute after a successful poll';
-  ophelp[15]:='Command to execute after a successful call';
-  ophelp[16]:='Whether APNS will exit after being called once';
-  ophelp[17]:='Session handshaking password';
-  menu(mschoice,17,0);
+  menuname:=omn;
+  option[0]:='Modem Setup';
+  option[1]:='Modem name : '+setup.modemname;
+  option[2]:='Initialise : '+setup.cmdinit;
+  option[3]:='Hang up    : '+setup.cmdhangup;
+  option[4]:='Dial prefix: '+setup.cmdpredial;
+  option[5]:='Answer call: '+setup.cmdanswer;
+  ophelp[1]:='Name of the APNS modem-type in use';
+  ophelp[2]:='Modem initialisation command';
+  ophelp[3]:='Modem hang up command';
+  ophelp[4]:='Modem dial prefix, use ATDP for Pulse, ATDT for Tone';
+  ophelp[5]:='Modem auto-answer command';
+  menu(mschoice,5,0);
   case mschoice of
-   1:getstring(setup.cmdinit,40,'Initialise');
-   2:getstring(setup.cmdhangup,40,'Hang Up');
-   3:getstring(setup.cmdpredial,40,'Dial Prefix');
-   4:getstring(setup.cmdanswer,40,'Auto-Answer');
-   5:begin
-      inc(setup.dialtime,5);
-      if setup.dialtime>60 then setup.dialtime:=20;
-     end;
-   6:begin
-      inc(setup.dialpause);
-      if setup.dialpause>10 then setup.dialpause:=1;
-     end;
-   7:begin
-      inc(setup.maxattempts);
-      if setup.maxattempts>20 then setup.maxattempts:=1;
-     end;
-   8:begin
-      inc(setup.dialstart);
-      if setup.dialstart=24 then setup.dialstart:=0;
-     end;
-   9:begin
-      inc(setup.dialfinish);
-      if setup.dialfinish=24 then setup.dialfinish:=0;
-     end;
-  10:begin
-      inc(setup.waitstart);
-      if setup.waitstart=24 then setup.waitstart:=0;
-     end;
-  11:begin
-      inc(setup.waitfinish);
-      if setup.waitfinish=24 then setup.waitfinish:=0;
-     end;
-
-{$IFDEF debug}
-
-   12:begin
-       getstring(setup.site,4,'Site Identification');
-       while length(setup.site)<4 do setup.site:='0'+setup.site;
-       for loop:=1 to 4 do setup.site[loop]:=upcase(setup.site[loop]);
-      end;
-
-{$ENDIF}
-
-   13:begin
-       inc(setup.mnptime);
-       if setup.mnptime=11 then setup.mnptime:=0;
-      end;
-   14:getstring(setup.okdial,70,'Use %SITE as parameter');
-   15:getstring(setup.okwait,70,'Use %SITE as parameter');
-   16:setup.exitafter:=not setup.exitafter;
-   17:begin
-       getstring(setup.password,40,'Session handshake password');
-       setup.password:=ucase(setup.password);
-      end;
+   1:modemmenu(255);
+   2:getstring(setup.cmdinit,40,'Initialise');
+   3:getstring(setup.cmdhangup,40,'Hang Up');
+   4:getstring(setup.cmdpredial,40,'Dial Prefix');
+   5:getstring(setup.cmdanswer,40,'Auto-Answer');
    else;
   end;
+  if mschoice>1 then checkmod;
  until mschoice=0;
+end;
+
+{**************************************************************************}
+
+procedure apnssetup;
+
+begin
+ menuname:=menuname+' \ APNS SETUP';
+ newdentry('Dial period in seconds   ',1,'b',@setup.dialtime,3,0,'Time to wait for a connect (seconds)');
+ newdentry('Inter-dial pause minutes ',2,'b',@setup.dialpause,3,0,'Pause between consecutive calls to one site (minutes)');
+ newdentry('Maximum redials of a site',3,'b',@setup.maxattempts,3,0,'Maximum number of calls to each site in one session');
+ newdentry('Dial window start hour   ',4,'b',@setup.dialstart,2,0,'APNS auto-dial window start hour');
+ newdentry('Dial window finish hour  ',5,'b',@setup.dialfinish,2,0,'APNS auto-dial window finish hour');
+ newdentry('Wait window start hour   ',6,'b',@setup.waitstart,2,0,'APNS auto-answer window start hour');
+ newdentry('Wait window finish hour  ',7,'b',@setup.waitfinish,2,0,'APNS auto-answer window finish hour');
+ newdentry('Site identification code ',8,'X',@setup.site,4,0,'');
+ newdentry('Connect delay in seconds ',9,'b',@setup.mnptime,3,0,'Number of seconds to delay before handshaking');
+ newdentry('Exit after one call in   ',10,'o',@setup.exitafter,3,0,'Whether APNS will exit after being called once');
+ newdentry('RTC time can be reset    ',11,'O',@setup.blockrtc,3,0,'Whether clock can be reset by other sites');
+ newdentry('Difference from GMT / CET',12,'i',@setup.gmtdiff,5,0,'Difference (+/-) of local time to GMT in minutes');
+ newdentry('Dial action',13,'S',@setup.okdial,70,0,'Command to execute after a successful call out to %SITE');
+ newdentry('Wait action',14,'S',@setup.okwait,70,0,'Command to execute after a successful call in from %SITE');
+ newdentry('Password   ',15,'S',@setup.password,40,0,'Session handshaking password');
+ dataentry(15,1,'APNS Setup');
 end;
 
 {**************************************************************************}
@@ -808,13 +1003,12 @@ end;
 procedure commsetup;
 
 const
- bpsrate:array [1..7] of word=(300,1200,2400,4800,9600,19200,38400);
- parsetting:array [0..2] of string[4]=('None','Even','Odd');
  dircon:array [false..true] of string[6]=('Modem','Direct');
+ irqs:array [0..7] of byte=($FE,$FD,$FB,$F7,$EF,$DF,$BF,$7F);
 
 var
  cschoice:byte;
- bips:byte;
+ tb1,tb2,bips:byte;
  temp:string;
 
 begin
@@ -822,7 +1016,7 @@ begin
  menuname:=menuname+' \ COMMS SETUP';
  status;
  repeat
-  str(setup.baud:5,curspeed);
+  str(setup.baud:6,curspeed);
   str(setup.comport,curport);
   option[0]:='Comms Setup';
   option[1]:='Bits per Second: '+curspeed;
@@ -833,43 +1027,72 @@ begin
   str(setup.stopbits,temp);
   option[5]:='Stop-bits: '+temp;
   option[6]:=dircon[setup.nulmodem]+' connection';
-  ophelp[1]:='Maximum speed (computer to modem)';
+  option[7]:='COM 5 (User) Base '+w2hexs(setup.com5.base)+'h';
+  for tb2:=0 to 7 do
+   if setup.com5.irq=irqs[tb2] then tb1:=tb2;
+  str(tb1,temp);
+  option[8]:='COM 5 (User) IRQ  '+temp;
+  option[9]:='COM 5 (user) Int. '+hexstr[succ(setup.com5.int)]+'h';
+  option[10]:='Use FIFO buffers: '+yesno[setup.usefifos];
+  ophelp[1]:='Maximum DTE speed (300 - 115200 bps)';
   ophelp[2]:='Communications port (IBM)';
   ophelp[3]:='Byte length (usually 8 bits)';
-  ophelp[4]:='Parity setting (None, Even, Odd) usually None';
+  ophelp[4]:='Parity setting (None, Even, Odd, Mark, Space)';
   ophelp[5]:='Stop bits (0,1,2) usually 1';
   ophelp[6]:='For null-modem links use Direct, normally use Modem';
-  menu(cschoice,6,0);
+  ophelp[7]:='I/O port base address for COM 5 (User)';
+  ophelp[8]:='Hardware Interrupt (IRQ) for COM 5 (User)';
+  ophelp[9]:='Software Interrupt (INT) for COM 5 (User)';
+  ophelp[10]:='Allow use of FIFO buffers';
+  menu(cschoice,10,0);
   case cschoice of
    1:begin
-      bips:=1;
-      while setup.baud<>bpsrate[bips] do inc(bips);
-      inc(bips);
-      if bips>7 then bips:=1;
-      setup.baud:=bpsrate[bips];
-      str(bpsrate[bips]:5,curspeed);
+      setup.baud:=setup.baud*2;
+      if setup.baud=153600 then setup.baud:=115200;
+      if setup.baud=230400 then setup.baud:=300;
      end;
    2:begin
       inc(setup.comport);
-      if setup.comport>4 then setup.comport:=1;
+      if setup.comport>8 then setup.comport:=1;
       str(setup.comport,curport);
      end;
-   4:begin
-      inc(setup.parity);
-      if setup.parity>2 then setup.parity:=0;
-     end;
-   3:begin
-      inc(setup.length);
-      if setup.length>8 then setup.length:=7;
-     end;
-   5:begin
-      inc(setup.stopbits);
-      if setup.stopbits>2 then setup.stopbits:=1;
-     end;
    6:setup.nulmodem:=not setup.nulmodem;
-   else;
+   7:begin
+      temp:=w2hexs(setup.com5.base);
+      getstring(temp,4,'COM 5 (User) Base');
+      while length(temp)<4 do temp:='0'+temp;
+      setup.com5.base:=hexs2w(ucase(temp));
+     end;
+   8:begin
+      inc(tb1);
+      if tb1=8 then tb1:=0;
+      setup.com5.irq:=irqs[tb1];
+      setup.com5.int:=tb1+8;
+     end;
+   9:begin
+      inc(setup.com5.int);
+      if setup.com5.int=16 then setup.com5.int:=8;
+     end;
+   10:setup.usefifos:=not setup.usefifos;
+    else;
   end;
  until cschoice=0;
+end;
+
+{**************************************************************************}
+
+procedure writesetup;
+
+begin
+ crc:=0;
+ crc16(crc,security,sizeof(security));
+ if limited then crc:=not crc;
+ setup.crc:=crc;
+ encrconf;
+ rewrite(setupfile);
+ write(setupfile,setup);
+ close(setupfile);
+ if ioresult<>0 then winmsg('Error','Error writing APNS.CFG');
 end;
 
 {**************************************************************************}
@@ -890,29 +1113,23 @@ begin
   option[1]:='Screen and colour';
   option[2]:='Filenames and paths';
   option[3]:='APNS control settings';
-  option[4]:='Communications settings';
-  option[5]:='Write setup to disk';
+  option[4]:='Modem settings';
+  option[5]:='Communications settings';
+  option[6]:='Undo all changes';
   ophelp[1]:='Modify appearance of APNS';
   ophelp[2]:='Modify upload and download directories';
-  ophelp[3]:='Modify dial strings et cetera';
-  ophelp[4]:='Modify communication port parameters';
-  ophelp[5]:='Make settings permanent';
-  menu(smchoice,5,0);
+  ophelp[3]:='Modify APNS control settings';
+  ophelp[4]:='Modify modem control settings';
+  ophelp[5]:='Modify communication port parameters';
+  ophelp[6]:='Restore configuration to undo modifications';
+  menu(smchoice,6,0);
   case smchoice of
    1:screensetup;
    2:filesetup;
-   3:modemsetup;
-   4:commsetup;
-   5:begin
-      crc:=0;
-      for loop:=1 to sizeof(config)-2 do crc16(checksum,crc,security[loop]);
-      setup.crc:=crc;
-      assign(setupfile,cfgname);
-      rewrite(setupfile);
-      write(setupfile,setup);
-      close(setupfile);
-      if ioresult>0 then write(#7);
-     end;
+   3:apnssetup;
+   4:modemsetup;
+   5:commsetup;
+   6:setup:=oldsetup;
    else;
   end;
  until smchoice=0;
@@ -920,191 +1137,150 @@ end;
 
 {**************************************************************************}
 
-function picklist(title:string):longint;
+procedure sortsites;
+
+type
+ slist=array [1..250] of dialentry;
 
 var
- oldef,default,oldfirst,first,max:longint;
- x,y:byte;
- wmin,wmax:word;
- c:char;
- endnow:boolean;
- loop,oldcol:byte;
- s:string;
+ slptr:^slist;
+ loop,inner,howmany,handle:word;
+ priority:string;
+
+{**************************************************************************}
+
+procedure qsort(l,r:integer);
+
+var
+ i,j:integer;
+ x,y:dialentry;
 
 begin
- menuname:=menuname+' \ CHOOSE SITE';
- helpline:='Use Up, Down, PgUp, PgDn, Home and End to locate site';
- status;
- cursoroff;
- endnow:=false;
- if last>=18 then max:=17 else max:=pred(last);
- openwin(18,4,62,max+6,store,x,y,true,title);
- oldfirst:=1;
- first:=0;
- default:=0;
+ i:=l;
+ j:=r;
+ x:=slptr^[(l+r) DIV 2];
  repeat
-
-  if oldfirst<>first then begin
-   gotoxy(1,1);
-   clreol;
-   seek(dialfile,first);
-   for loop:=first to max do begin
-    writeln;
-    read(dialfile,current);
-    option[loop-first]:=current.name;
-    clreol;
-    centre(current.name);
-   end;
-   oldfirst:=first;
-   writeln;
-   clreol;
+  while slptr^[i].name<x.name do inc(i);
+  while x.name<slptr^[j].name do dec(j);
+  if i<=j then begin
+   y:=slptr^[i];
+   slptr^[i]:=slptr^[j];
+   slptr^[j]:=y;
+   inc(i);
+   dec(j);
   end;
-
-  gotoxy(1,default+2-first);
-  textcolor(setup.hfclr);
-  textbackground(setup.hbclr);
-  clreol;
-  centre(option[default-first]);
-  textcolor(setup.wfclr);
-  textbackground(setup.wbclr);
-
-  oldef:=default;
-  repeat status until keypressed;
-  c:=readkey;
-  if c=cr then endnow:=true;
-  if c=esc then begin
-   endnow:=true;
-   default:=-1;
-  end;
-  if c=nul then case readkey of
-   #72:begin
-        dec(default);
-        if (default<first) and (first>0) then begin
-         dec(max);
-         dec(first);
-        end;
-       end;
-   #80:begin
-        inc(default);
-        if (default>max) and (max<pred(last)) then begin
-         inc(max);
-         inc(first);
-        end;
-       end;
-   #71:default:=first;
-   #79:default:=max;
-   #81:begin
-        loop:=0;
-        while (max<pred(last)) and (loop<18) do begin
-         inc(first);
-         inc(max);
-         inc(default);
-         inc(loop);
-        end;
-        if oldef<first then oldef:=first;
-       end;
-   #73:begin
-        loop:=0;
-        while (first>0) and (loop<18) do begin
-         dec(first);
-         dec(max);
-         dec(default);
-         inc(loop);
-        end;
-        if oldef>max then oldef:=max;
-       end;
-   #24:begin
-        swapem(save);
-        repeat until keypressed;
-        while keypressed do c:=readkey;
-        swapem(save);
-       end;
-   #59:begin
-        oldcol:=oldcolour;
-        wmin:=windmin;
-        wmax:=windmax;
-        window(1,2,80,24);
-        onlinehelp(title);
-        oldcolour:=oldcol;
-        windmin:=wmin;
-        windmax:=wmax;
-       end;
-   else;
-  end;
-  if not endnow then begin
-   if default<first then default:=max else
-   if default>max then default:=first;
-   if oldef<>default then begin
-    gotoxy(1,oldef+2-first);
-    clreol;
-    centre(option[oldef-first]);
-   end;
-  end;
- until endnow;
- closewin(store,x,y);
- cursoron;
- if default>=0 then begin
-  seek(dialfile,default);
-  read(dialfile,current);
- end;
- picklist:=default;
+ until i>j;
+ if l<j then qsort(l,j);
+ if i<r then qsort(i,r);
 end;
 
 {**************************************************************************}
 
-procedure editmenu(title:string;seekto:longint);
+begin
+ reset(dialfile);
+ howmany:=filesize(dialfile);
+ if mem_avail>=4096 then begin
+  handle:=mem_alloc(4096);
+  slptr:=ptr(handle,0);
+  for loop:=1 to howmany do read(dialfile,slptr^[loop]);
+  qsort(1,howmany);
+  reset(dialfile);
+  for loop:=1 to howmany do write(dialfile,slptr^[loop]);
+  mem_free(handle);
+ end else winmsg('Error','Not enough memory for sorting');
+end;
+
+{**************************************************************************}
+
+procedure editsite(title:string;seekto:longint);
 
 const
- mess:array [fail..success] of string[7]=('Fail','Partial','One-way','Success');
+ rmess:array [fail..success] of string[7]=('Fail','Partial','One-way','Success');
+ cmess:array [everyday..never] of string[12]=('Always','When Sending','Never');
 
 var
- emchoice,bips:byte;
+ handle:word;
  s:string;
+ i:integer;
+ emchoice,bips:byte;
  c:char;
  ask:boolean;
 
 begin
+ if currsite.control>never then currsite.control:=everyday;
+ fillchar(currsite.other,sizeof(currsite.other),0);
  emchoice:=1;
  ask:=false;
  repeat
   option[0]:=title;
-  option[1]:='Site Name: '+current.name;
-  option[2]:='Site ID  : '+current.site;
-  option[3]:='Phone Number: '+current.number;
-  option[4]:='Dial Prefix : '+current.prefix;
-  str(current.days,s);
-  option[5]:='Days Failed : '+s;
-  s:=mess[current.today];
-  option[6]:='Last night  : '+s;
+  option[1]:='Site Name   : '+currsite.name;
+  option[2]:='Site Code   : '+currsite.site;
+  option[3]:='Phone Number: '+currsite.number;
+  str(currsite.bips:6,s);
+  option[4]:='Modem Speed : '+s;
+  s:=cmess[currsite.control];
+  option[5]:='When To Dial: '+s;
+  str(succ(currsite.session),s);
+  option[6]:='Dial Session: '+s;
+  option[7]:='Dial Prefix : '+currsite.prefix;
+  str(currsite.days,s);
+  option[8]:='Update Clock: '+yesno[currsite.sendtime];
+  option[9]:='Days Failed : '+s;
+  s:=rmess[currsite.today];
+  option[10]:='Last Status : '+s;
   ophelp[1]:='Name used to identify site';
   ophelp[2]:='Site Identification, 4 characters';
   ophelp[3]:='Phone number including outside line codes and pauses';
-  ophelp[4]:='Dial prefix used for this site';
-  ophelp[5]:='APNS will not dial any site unavailable for over 7 days';
-  ophelp[6]:='Result of last dial attempt to this site';
-  menu(emchoice,6,0);
+  ophelp[4]:='Speed of the site modem';
+  ophelp[5]:='Dial every day, when we have files to send, or never';
+  ophelp[6]:='Dial session number, for use with multiple sessions';
+  ophelp[7]:='Modem dial prefix, use ATDP for Pulse, ATDT for Tone';
+  ophelp[8]:='Update site''s clock from this machine';
+  ophelp[9]:='APNS will not dial any site unavailable for over 7 days';
+  ophelp[10]:='Result of the last attempted dial to this site';
+  menu(emchoice,10,0);
   case emchoice of
-   1:getstring(current.name,40,'Name');
+   1:getstring(currsite.name,40,'Name');
    2:begin
-      getstring(current.site,4,'Site ID');
-      while length(current.site)<4 do current.site:='0'+current.site;
-      for loop:=1 to 4 do current.site[loop]:=upcase(current.site[loop]);
+      getstring(currsite.site,4,'Site ID');
+      while length(currsite.site)<4 do currsite.site:='0'+currsite.site;
+      currsite.site:=ucase(currsite.site);
      end;
-   3:getstring(current.number,40,'Phone Number');
-   4:getstring(current.prefix,40,'Dial Prefix');
-   5:current.days:=0;
+   3:getstring(currsite.number,40,'Phone Number');
+   4:begin
+      currsite.bips:=currsite.bips*2;
+      if currsite.bips=153600 then currsite.bips:=115200;
+      if currsite.bips=230400 then currsite.bips:=300;
+     end;
+   5:begin
+      inc(currsite.control);
+      if currsite.control>never then currsite.control:=everyday;
+     end;
+   6:begin
+      str(succ(currsite.session),s);
+      getstring(s,2,'Session Number (1-99)');
+      val(s,currsite.session,i);
+      if currsite.session>0 then dec(currsite.session);
+     end;
+   7:getstring(currsite.prefix,40,'Dial Prefix');
+   8:currsite.sendtime:=not currsite.sendtime;
+   9:begin
+      currsite.days:=0;
+      currsite.today:=success;
+     end;
    else;
   end;
   if emchoice>0 then ask:=true;
  until emchoice=0;
  if ask then begin
-  openwin(2,5,78,7,save,oldx,oldy,true,'Confirm Save');
-  centre(lf+'Do you wish to save the current entry (Y/n) ?');
+  handle:=openwin(2,5,78,7,'Confirm Save');
+  centre(#10+'Do you wish to save '+currsite.name+' (Y/n) ?');
   c:=upcase(readkey);
-  closewin(save,oldx,oldy);
+  closewin(handle);
   if c<>'N' then begin
+   log('+ Site '+currsite.name+' modified');
    seek(dialfile,seekto);
-   write(dialfile,current);
+   write(dialfile,currsite);
    if seekto=last then inc(last);
   end;
  end;
@@ -1112,44 +1288,46 @@ end;
 
 {**************************************************************************}
 
-procedure addmenu;
+procedure addsite;
 
 begin
- fillchar(current.name,sizeof(current),#0);
- current.prefix:=setup.cmdpredial;
- editmenu('Add an entry',last);
+ fillchar(currsite,sizeof(currsite),0);
+ currsite.prefix:=setup.cmdpredial;
+ currsite.bips:=setup.baud;
+ currsite.sendtime:=true;
+ currsite.today:=success;
+ editsite('Add Node',last);
 end;
 
 {**************************************************************************}
 
-procedure deletemenu;
+procedure deletesite(filename:string);
 
 var
- c:char;
+ handle:word;
  picked:longint;
+ c:char;
 
 begin
  picked:=picklist('Delete');
  if picked>=0 then begin
-  openwin(2,5,78,7,save,oldx,oldy,true,'Confirm Delete');
-  centre(lf+'Do you wish to delete '+current.name+' (y/N) ?');
+  handle:=openwin(2,5,78,7,'Confirm Delete');
+  centre(#10+'Do you wish to delete '+currsite.name+' (y/N) ?');
   c:=upcase(readkey);
-  closewin(save,oldx,oldy);
+  closewin(handle);
   if c='Y' then begin
+   close(dialfile);
+   delrec(filename,picked,sizeof(currsite));
+   reset(dialfile);
    dec(last);
-   seek(dialfile,last);
-   read(dialfile,current);
-   seek(dialfile,picked);
-   write(dialfile,current);
-   seek(dialfile,last);
-   truncate(dialfile);
+   log('+ Site '+currsite.name+' deleted');
   end;
  end;
 end;
 
 {**************************************************************************}
 
-procedure resetall;
+procedure resetall(days:byte);
 
 var
  loop:longint;
@@ -1157,15 +1335,15 @@ var
 begin
  reset(dialfile);
  for loop:=0 to pred(last) do begin
-  read(dialfile,current);
-  current.days:=0;
+  read(dialfile,currsite);
+  currsite.days:=days;
   seek(dialfile,loop);
-  write(dialfile,current);
+  write(dialfile,currsite);
  end;
  reset(dialfile);
 end;
 
-{*************************************************************************}
+{**************************************************************************}
 
 procedure dialdir;
 
@@ -1173,186 +1351,69 @@ var
  ddchoice:byte;
  picked:longint;
  omname:string[80];
-
-begin
- omname:=menuname;
- assign(dialfile,homepath+'APNS.FON');
- reset(dialfile);
- if ioresult<>0 then begin
-  rewrite(dialfile);
-  reset(dialfile);
- end;
- last:=filesize(dialfile);
- ddchoice:=1;
- repeat
-  menuname:=omname+' \ DIALLING DIRECTORY';
-  status;
-  option[0]:='Dialling Directory';
-  option[1]:='Add a new entry';
-  option[2]:='Edit an existing entry';
-  option[3]:='Delete an existing entry';
-  option[4]:='Make all sites diallable';
-  ophelp[1]:='Add an new site to the dialling directory';
-  ophelp[2]:='Change settings for any site';
-  ophelp[3]:='Permanently remove any site';
-  ophelp[4]:='Reset the days unreachable flags';
-  menu(ddchoice,4,0);
-  case ddchoice of
-   1:addmenu;
-   2:if last>0 then begin
-      picked:=picklist('Edit');
-      if picked>=0 then editmenu('Edit an entry',picked);
-     end else beep;
-   3:if last>0 then deletemenu else beep;
-   4:resetall;
-   else;
-  end;
- until ddchoice=0;
- close(dialfile);
-end;
-
-{**************************************************************************}
-
-function pickevent(title:string):longint;
-
-var
- oldef,default,oldfirst,first,max:longint;
- x,y:byte;
- wmin,wmax:word;
- c:char;
- endnow:boolean;
- loop,oldcol:byte;
  s:string;
 
 begin
- menuname:=menuname+' \ CHOOSE EVENT';
- helpline:='Use Up, Down, PgUp, PgDn, Home and End to locate event';
- status;
- cursoroff;
- endnow:=false;
- if last>=18 then max:=17 else max:=pred(last);
- openwin(18,4,62,max+6,store,x,y,true,title);
- oldfirst:=1;
- first:=0;
- default:=0;
- repeat
-
-  if oldfirst<>first then begin
-   gotoxy(1,1);
-   clreol;
-   seek(schedfile,first);
-   for loop:=first to max do begin
-    writeln;
-    read(schedfile,currevent);
-    option[loop-first]:=currevent.comment;
-    clreol;
-    centre(currevent.comment);
+ @pick:=@pickdial;
+ omname:=menuname;
+ s:=homepath+'APNS.FON';
+ assign(dialfile,s);
+ if exist(s) then reset(dialfile) else rewrite(dialfile);
+ if io(s) then begin
+  pickinit;
+  last:=filesize(dialfile);
+  ddchoice:=1;
+  repeat
+   menuname:=omname+' \ NODE LIST';
+   status;
+   option[0]:='Node List';
+   option[1]:='Add Node to the node list';
+   option[2]:='Edit existing Node';
+   option[3]:='Delete existing Node';
+   option[4]:='Make all Nodes diallable';
+   option[5]:='Make all Nodes undiallable';
+   option[6]:='Sort Nodes by name';
+   ophelp[1]:='Add an new node to the node list';
+   ophelp[2]:='Change settings for any node';
+   ophelp[3]:='Permanently remove any node';
+   ophelp[4]:='Reset the days unreachable flags';
+   ophelp[5]:='Set all days unreachable flags to 8';
+   ophelp[6]:='Alphabetically sort the node list';
+   menu(ddchoice,6,0);
+   if (ddchoice=2) or (ddchoice=3) then
+    helpline:='Use Up, Down, PgUp, PgDn, Home and End to locate site';
+   case ddchoice of
+    1:addsite;
+    2:if last>0 then begin
+       picked:=picklist('Edit');
+       if picked>=0 then editsite('Edit Node',picked);
+      end else winmsg('Error','There are no entries in the node-list');
+    3:if last>0 then deletesite(s) else winmsg('Error','There are no entries in the node-list');
+    4:begin
+       resetall(0);
+       log('+ All nodes made diallable');
+      end;
+    5:begin
+       resetall(8);
+       log('+ All nodes made undiallable');
+      end;
+    6:sortsites;
+    else;
    end;
-   oldfirst:=first;
-   writeln;
-   clreol;
-  end;
-
-  gotoxy(1,default+2-first);
-  textcolor(setup.hfclr);
-  textbackground(setup.hbclr);
-  clreol;
-  centre(option[default-first]);
-  textcolor(setup.wfclr);
-  textbackground(setup.wbclr);
-
-  oldef:=default;
-  repeat status until keypressed;
-  c:=readkey;
-  if c=cr then endnow:=true;
-  if c=esc then begin
-   endnow:=true;
-   default:=-1;
-  end;
-  if c=nul then case readkey of
-   #72:begin
-        dec(default);
-        if (default<first) and (first>0) then begin
-         dec(max);
-         dec(first);
-        end;
-       end;
-   #80:begin
-        inc(default);
-        if (default>max) and (max<pred(last)) then begin
-         inc(max);
-         inc(first);
-        end;
-       end;
-   #71:default:=first;
-   #79:default:=max;
-   #81:begin
-        loop:=0;
-        while (max<pred(last)) and (loop<18) do begin
-         inc(first);
-         inc(max);
-         inc(default);
-         inc(loop);
-        end;
-        if oldef<first then oldef:=first;
-       end;
-   #73:begin
-        loop:=0;
-        while (first>0) and (loop<18) do begin
-         dec(first);
-         dec(max);
-         dec(default);
-         inc(loop);
-        end;
-        if oldef>max then oldef:=max;
-       end;
-   #24:begin
-        swapem(save);
-        repeat until keypressed;
-        while keypressed do c:=readkey;
-        swapem(save);
-       end;
-   #59:begin
-        oldcol:=oldcolour;
-        wmin:=windmin;
-        wmax:=windmax;
-        window(1,2,80,24);
-        onlinehelp(title);
-        oldcolour:=oldcol;
-        windmin:=wmin;
-        windmax:=wmax;
-       end;
-   else;
-  end;
-  if not endnow then begin
-   if default<first then default:=max else
-   if default>max then default:=first;
-   if oldef<>default then begin
-    gotoxy(1,oldef+2-first);
-    clreol;
-    centre(option[oldef-first]);
-   end;
-  end;
- until endnow;
- closewin(store,x,y);
- cursoron;
- if default>=0 then begin
-  seek(schedfile,default);
-  read(schedfile,currevent);
+  until ddchoice=0;
+  close(dialfile);
  end;
- pickevent:=default;
 end;
 
 {**************************************************************************}
 
 procedure editevent(title:string;seekto:longint);
 
-const
- yesno:array [false..true] of string[3]=('No','Yes');
-
 var
- emchoice:byte;
+ handle:word;
  s:string;
+ i:integer;
+ emchoice,loop:byte;
  c:char;
  ask:boolean;
 
@@ -1360,62 +1421,81 @@ begin
  emchoice:=1;
  ask:=false;
  repeat
-  option[0]:=title;
-  option[1]:='Event Name: '+currevent.comment;
-  option[2]:='Command : '+currevent.command;
-  option[3]:='Priority: '+currevent.priority;
-  option[4]:='Monday    '+yesno[currevent.okonday[1]];
-  option[5]:='Tuesday   '+yesno[currevent.okonday[2]];
-  option[6]:='Wednesday '+yesno[currevent.okonday[3]];
-  option[7]:='Thursday  '+yesno[currevent.okonday[4]];
-  option[8]:='Friday    '+yesno[currevent.okonday[5]];
-  option[9]:='Saturday  '+yesno[currevent.okonday[6]];
-  option[10]:='Sunday    '+yesno[currevent.okonday[0]];
+  option[0] :=title;
+  option[1] :='Event Name : '+currevent.name;
+  option[2] :='DOS Command: '+currevent.command;
+  option[3] :='Priority   : '+currevent.priority;
+  option[4] :='Sunday ..... '+yesno[currevent.okonday[0]];
+  option[5] :='Monday ..... '+yesno[currevent.okonday[1]];
+  option[6] :='Tuesday .... '+yesno[currevent.okonday[2]];
+  option[7] :='Wednesday .. '+yesno[currevent.okonday[3]];
+  option[8] :='Thursday ... '+yesno[currevent.okonday[4]];
+  option[9] :='Friday ..... '+yesno[currevent.okonday[5]];
+  option[10]:='Saturday ... '+yesno[currevent.okonday[6]];
+  option[11]:='Once a day : '+yesno[currevent.onceonly];
   str(currevent.weekno,s);
-  option[11]:='Week No: '+s;
-  option[12]:='Date   : '+currevent.actdate;
+  option[12]:='Week Number: '+s;
+  option[13]:='Country    : '+itos(currevent.country,1);
+  option[14]:='Date active: '+currevent.actdate;
   ophelp[1]:='Name used to identify event';
-  ophelp[2]:='Command used to start event';
+  ophelp[2]:='Event DOS Command, use %DATE, %DAY, %MONTH, %YEAR';
   ophelp[3]:='Four character event priority';
-  ophelp[4]:='Does the event occur on a Monday';
-  ophelp[5]:='Does the event occur on a Tuesday';
-  ophelp[6]:='Does the event occur on a Wednesday';
-  ophelp[7]:='Does the event occur on a Thursday';
-  ophelp[8]:='Does the event occur on a Friday';
-  ophelp[9]:='Does the event occur on a Saturday';
-  ophelp[10]:='Does the event occur on a Sunday';
-  ophelp[11]:='Week number for the event (1-52). Specify one or more days as well';
-  ophelp[12]:='Date for the event (DD/MM/YY). Use a ? for a wildcard [??/10/??]';
-  menu(emchoice,12,0);
+  ophelp[4]:='Does the event occur on a Sunday';
+  ophelp[5]:='Does the event occur on a Monday';
+  ophelp[6]:='Does the event occur on a Tuesday';
+  ophelp[7]:='Does the event occur on a Wednesday';
+  ophelp[8]:='Does the event occur on a Thursday';
+  ophelp[9]:='Does the event occur on a Friday';
+  ophelp[10]:='Does the event occur on a Saturday';
+  ophelp[11]:='Does the event only run once per day';
+  ophelp[12]:='Week number for the event (1-52). Specify one or more days as well';
+  ophelp[13]:='Country Code for this event (32,33,44 etc)';
+  ophelp[14]:='Date for the event (DD/MM/YY), Wildcards [??/10/??] or ENDMONTH';
+  menu(emchoice,14,0);
   case emchoice of
-   1:getstring(currevent.comment,60,'Event Name');
+   1:getstring(currevent.name,60,'Event Name');
    2:getstring(currevent.command,60,'Event DOS Command');
    3:begin
       getstring(currevent.priority,4,'Event Priority');
       currevent.priority:=ucase(currevent.priority);
      end;
-   4:currevent.okonday[1]:=not currevent.okonday[1];
-   5:currevent.okonday[2]:=not currevent.okonday[2];
-   6:currevent.okonday[3]:=not currevent.okonday[3];
-   7:currevent.okonday[4]:=not currevent.okonday[4];
-   8:currevent.okonday[5]:=not currevent.okonday[5];
-   9:currevent.okonday[6]:=not currevent.okonday[6];
-  10:currevent.okonday[0]:=not currevent.okonday[0];
-  11:begin
-      inc(currevent.weekno);
+  4..10:currevent.okonday[emchoice-4]:=not currevent.okonday[emchoice-4];
+  11:currevent.onceonly:=not currevent.onceonly;
+  12:begin
+      str(currevent.weekno,s);
+      getstring(s,2,'Week No');
+      val(s,currevent.weekno,i);
       if currevent.weekno>52 then currevent.weekno:=0;
      end;
-  12:getstring(currevent.actdate,8,'Event Date (DD/MM/YY)');
+  13:begin
+      str(currevent.country,s);
+      getstring(s,3,'Country Code (32,33,44 etc)');
+      val(s,currevent.country,i);
+     end;
+  14:begin
+      getstring(currevent.actdate,8,'Event Date (DD/MM/YY) or ENDMONTH');
+      currevent.actdate:=ucase(currevent.actdate);
+      if currevent.actdate<>'ENDMONTH' then begin
+       for loop:=1 to length(currevent.actdate) do
+        if not (currevent.actdate[loop] in ['0'..'9','?','/']) then
+         currevent.actdate[loop]:='/';
+      end;
+      if currevent.actdate<>'' then begin
+       for loop:=0 to 6 do currevent.okonday[loop]:=true;
+       while length(currevent.actdate)<8 do currevent.actdate:=currevent.actdate+'?';
+      end;
+     end;
    else;
   end;
   if emchoice>0 then ask:=true;
  until emchoice=0;
  if ask then begin
-  openwin(2,5,78,7,save,oldx,oldy,true,'Confirm Save');
-  centre(lf+'Do you wish to save the current entry (Y/n) ?');
+  handle:=openwin(2,5,78,7,'Confirm Save');
+  centre(#10+'Do you wish to save '+currevent.name+' (Y/n) ?');
   c:=upcase(readkey);
-  closewin(save,oldx,oldy);
+  closewin(handle);
   if c<>'N' then begin
+   log('+ Event '+currevent.name+' modified');
    seek(schedfile,seekto);
    write(schedfile,currevent);
    if seekto=last then inc(last);
@@ -1428,190 +1508,276 @@ end;
 procedure addevent;
 
 begin
- fillchar(currevent,sizeof(currevent),#0);
- editevent('Add a new Event',last);
+ fillchar(currevent,sizeof(currevent),0);
+ for loop:=0 to 6 do currevent.okonday[loop]:=true;
+ editevent('Add Event',last);
 end;
 
 {**************************************************************************}
 
-procedure delevent;
+procedure delevent(filename:string);
 
 var
- c:char;
+ handle:word;
  picked:longint;
+ c:char;
 
 begin
- picked:=pickevent('Delete');
+ picked:=picklist('Delete');
  if picked>=0 then begin
-  openwin(2,5,78,7,save,oldx,oldy,true,'Confirm Delete');
-  centre(lf+'Do you wish to delete '+current.name+' (y/N) ?');
+  handle:=openwin(2,5,78,7,'Confirm Delete');
+  centre(#10+'Do you wish to delete '+currevent.name+' (y/N) ?');
   c:=upcase(readkey);
-  closewin(save,oldx,oldy);
+  closewin(handle);
   if c='Y' then begin
+   close(schedfile);
+   delrec(filename,picked,sizeof(currevent));
+   reset(schedfile);
    dec(last);
-   seek(schedfile,last);
-   read(schedfile,currevent);
-   seek(schedfile,picked);
-   write(schedfile,currevent);
-   seek(schedfile,last);
-   truncate(schedfile);
+   log('+ Event '+currevent.name+' deleted');
   end;
  end;
 end;
 
-{***************************************************************************}
+{**************************************************************************}
 
-procedure sortem;
+procedure sortsched;
+
+type
+ slist=array [1..250] of schedentry;
+
+var
+ slptr:^slist;
+ loop,inner,howmany,handle:word;
+ priority:string;
+
+{**************************************************************************}
+
+procedure qsort(l,r:integer);
+
+var
+ i,j:integer;
+ x,y:schedentry;
 
 begin
+ i:=l;
+ j:=r;
+ x:=slptr^[(l+r) DIV 2];
+ repeat
+  while slptr^[i].priority<x.priority do inc(i);
+  while x.priority<slptr^[j].priority do dec(j);
+  if i<=j then begin
+   y:=slptr^[i];
+   slptr^[i]:=slptr^[j];
+   slptr^[j]:=y;
+   inc(i);
+   dec(j);
+  end;
+ until i>j;
+ if l<j then qsort(l,j);
+ if i<r then qsort(i,r);
 end;
 
-{***************************************************************************}
+{**************************************************************************}
+
+begin
+ reset(schedfile);
+ howmany:=filesize(schedfile);
+ if mem_avail>=4096 then begin
+  handle:=mem_alloc(4096);
+  slptr:=ptr(handle,0);
+  for loop:=1 to howmany do read(schedfile,slptr^[loop]);
+  qsort(1,howmany);
+  reset(schedfile);
+  if howmany<27 then begin
+   priority:='AAAA';
+   for loop:=1 to howmany do begin
+    slptr^[loop].priority:=priority;
+    for inner:=1 to 4 do inc(priority[inner]);
+   end;
+  end;
+  for loop:=1 to howmany do write(schedfile,slptr^[loop]);
+  mem_free(handle);
+ end else winmsg('Error','Not enough memory for sorting');
+end;
+
+{**************************************************************************}
 
 procedure schedmenu;
 
 var
  omname:string[80];
+ s:string;
  smchoice:byte;
  picked:longint;
 
 begin
+ @pick:=@pickevent;
  omname:=menuname;
- assign(schedfile,homepath+'APNS.SCH');
- reset(schedfile);
- if ioresult<>0 then begin
-  rewrite(schedfile);
-  reset(schedfile);
+ s:=homepath+'APNS.SCH';
+ assign(schedfile,s);
+ if exist(s) then reset(schedfile) else rewrite(schedfile);
+ if io(s) then begin
+  pickinit;
+  last:=filesize(schedfile);
+  smchoice:=1;
+  repeat
+   menuname:=omname+' \ SCHEDULER';
+   status;
+   option[0]:='Schedule';
+   option[1]:='Add Event';
+   option[2]:='Edit Event';
+   option[3]:='Delete Event';
+   option[4]:='Sort Events';
+   ophelp[1]:='Add a new event to the current schedule';
+   ophelp[2]:='Edit or view a defined schedule event';
+   ophelp[3]:='Delete an event from the schedule list';
+   ophelp[4]:='Sort event order by priorities';
+   menu(smchoice,4,0);
+   if (smchoice=2) or (smchoice=3) then begin
+    menuname:=menuname+' \ CHOOSE EVENT';
+    helpline:='Use Up, Down, PgUp, PgDn, Home and End to locate event';
+   end;
+   case smchoice of
+    1:addevent;
+    2:if last>0 then begin
+       picked:=picklist('Edit');
+       menuname:=omname+' \ SCHEDULER';
+       if picked>=0 then editevent('Edit Event',picked);
+      end else winmsg('Error','There are no events to edit');
+    3:if last>0 then delevent(s) else winmsg('Error','There are no events to delete');
+    4:sortsched;
+    5:
+    else;
+   end;
+  until smchoice=0;
+  close(schedfile);
  end;
- last:=filesize(schedfile);
- smchoice:=1;
- repeat
-  menuname:=omname+' \ SCHEDULER';
-  status;
-  option[0]:='Scheduler';
-  option[1]:='Add Event';
-  option[2]:='Delete Event';
-  option[3]:='Edit Event';
-  option[4]:='Sort Events';
-  ophelp[1]:='Add a new event to the current schedule';
-  ophelp[2]:='Delete an event from the schedule list';
-  ophelp[3]:='Edit or view a defined schedule event';
-  ophelp[4]:='Sort event order by priorities';
-  menu(smchoice,4,0);
-  case smchoice of
-   1:addevent;
-   2:if last>0 then delevent else beep;
-   3:if last>0 then begin
-      picked:=pickevent('Edit');
-      if picked>=0 then editevent('Edit an Event',picked);
-     end else beep;
-   4:sortem;
-   else;
-  end;
- until smchoice=0;
 end;
 
-{***************************************************************************}
+{**************************************************************************}
 
 begin
- menuname:='';
- helpline:='';
- mode:=lastmode;
- if mode=MONO then dosptr:=ptr($B000,0) else dosptr:=ptr($B800,0);
- if not(mode in [BW80,CO80,MONO]) then begin
-  mode:=CO80;
-  textmode(CO80);
- end;
-
- asm
-  mov ah,3
-  mov bh,3
-  int $10
-  mov cursor_spec,cx
- end;
-
- lights:=true;
- curfile:='';
- s:=fexpand(paramstr(0));
- fsplit(s,dir,name,ext);
- homepath:=dir;
- curname:=name;
- s:=homepath+'APNS.LOG';
- assign(logfile,s);
- if exist(s) then append(logfile) else rewrite(logfile);
- cfgname:=homepath+'APNS.CFG';
-
- writeln(#10'Retrieving configuration...');
- assign(setupfile,cfgname);
- reset(setupfile);
- read(setupfile,setup);
- close(setupfile);
- ioerror:=ioresult;
- if ioerror<>0 then begin
-  writeln('IO Error ',ioerror,' while reading configuration file');
-  exit;
- end;
-
- crc:=0;
- for loop:=1 to sizeof(config)-2 do crc16(checksum,crc,security[loop]);
- if crc<>setup.crc then begin
-  writeln('Configuration file has been tampered with');
-  exit;
- end;
-
- getdir(0,curpath);
 
  exitsave:=exitproc;
  exitproc:=@exitroutine;
 
+ menuname:='Retrieving configuration...';
+
+ textattr:=setup.fclr;
+ clrscr;
+ copyright;
+ gotoxy(1,23);
+ statusline:='';
+ helpline:='';
+ @status:=@astatus;
+ status;
+ firetime:=time;
+
+ datelogged:=false;
+
+ s:=homepath+'APNS.LOG';
+ assign(logfile,s);
+ if exist(s) then append(logfile) else rewrite(logfile);
+ if not io(s) then exit;
+
+ s:=homepath+'APNS.CFG';
+
+ assign(setupfile,s);
+ reset(setupfile);
+ read(setupfile,setup);
+ close(setupfile);
+ errcheck(' while reading '+s);
+
+ limited:=false;
+ encrconf;
+ crc:=0;
+ crc16(crc,security,sizeof(security));
+ if crc<>setup.crc then begin
+  crc:=not crc;
+  limited:=true;
+ end;
+ if crc<>setup.crc then begin
+  log('! Configuration file has been tampered with');
+  exit;
+ end;
+ firstcrc:=setup.crc;
+
  {This is the first place the variable SETUP is referenced}
 
- directvideo:=setup.direct;
- checksnow:=setup.snow;
- statusline:='';
- for loop:=0 to max_menu_items do option[loop]:='';
- save:=dosptr^;
+ oldsetup:=setup;
 
- if mode<>CO80 then begin
-  setup.fclr:=7;
-  setup.bclr:=0;     {Define monochrome colour scheme}
-  setup.wfclr:=0;
-  setup.wbclr:=7;
-  setup.hfclr:=7;
-  setup.hbclr:=0;
- end;
- textcolor(setup.fclr);
- textbackground(setup.bclr);
- window(1,2,80,24);
- clrscr;
+ directvideo:=setup.directvideo;
+ checksnow:=setup.snow;
+ utilbeep:=setup.sound;
+
+ fillchar(option,sizeof(option),0);
+
+ if scrmode=CO80 then move(setup.fclr,colset,7) else move(monset,colset,7);
+ textcolor(colset.fclr);
+ textbackground(colset.bclr);
+
+ status;
  copyright;
 
  thatsallfolks:=false;
- cursor:=true;
- status;
 
- writeln(logfile);
- writeln(logfile,stringof('Í',79));
- writeln(logfile);
- writeln(logfile,'  APCONFIG started at '+time+' on the '+date);
+ if setup.password<>'' then begin
+  helpline:='Enter the APNS security password';
+  status;
+  invisible:=true;
+  s:='';
+  getstring(s,40,'Password');
+  s:=ucase(s);
+  if s<>setup.password then begin
+   log('+ Incorrect password');
+   winmsg('Password','Password Incorrect');
+   exit;
+  end;
+  invisible:=false;
+ end;
+
+ if paramcount>0 then begin
+  s:=ucase(paramstr(1));
+  if s='SETDIR' then begin
+   setup.updir:=fexpand('\APNS\SEND');
+   setup.downdir:=fexpand('\APNS\RECV');
+  end;
+ end;
+
+ cursoroff;
 
  mmchoice:=1;
  repeat
   menuname:='APCONFIG';
+  helpline:='';
   status;
   option[0]:='Main Menu';
   option[1]:='Configuration';
   option[2]:='Node List';
   option[3]:='Scheduler';
+  option[4]:='Modem List';
+  option[5]:='Com-Ports';
+  option[6]:='Trim Log File';
   ophelp[1]:='Configuration sub-menus';
   ophelp[2]:='Node-list management menus';
   ophelp[3]:='Event schedule management menu';
-  menu(mmchoice,3,0);
+  ophelp[4]:='Modem-list maintenance menu';
+  ophelp[5]:='Locate standard IBM Com-Ports';
+  ophelp[6]:='Remove old information from APNS.LOG';
+  menu(mmchoice,5,0);
   case mmchoice of
    1:setupmenu;
    2:dialdir;
    3:schedmenu;
+   4:modemmenu(0);
+   5:comports;
+   6:logmaint;
    else;
   end;
  until mmchoice=0;
+
+ writesetup;
+ if setup.crc<>firstcrc then log('+ Configuration modified');
+
 end. {APCONFIG}

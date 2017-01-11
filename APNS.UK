@@ -1,0 +1,140 @@
+{$DEFINE UK}
+* Hangup failed
+* Receiver detected error in data
+* Receiver detected wrong block
+* Resending from
+* Ignoring duplicate block
+* Detected error in data
+* Wrong block detected
+* Requesting resend from
+* Summary for
+- APNS exited
+- APNS started
+? Unrecognised parameter:
+! Abnormal program termination. Please report the following:
+! Modem initialisation failed
+! Could not open file
+! Initial APNS handshake failed
+! Outbound identity transfer failed
+! Outbound file info transfer failed
+! Upload of '+transfer.name+' failed
+! Inbound identity transfer failed
+! Security violation
+! Inbound file info transfer failed
+! Download of '+transfer.name+' failed
+! APNS Wait aborted from the keyboard
+! Duplicate site ID
+! Cannot dial any of the entries in the nodelist
+! APNS Dial aborted from the keyboard
+! APNS Dial aborted from the keyboard
+! Did not connect with site
+! Handshake only with site
+! One-way transfer with site
+! Configuration file has been tampered with
+! Carbon Copy loaded - disabling
+! PcAnywhere loaded
+! This is a demonstration version only
+! This is a limited demo version only
+'Init. Modem '
+'Receiving   '
+'Hanging Up  '
+'Re-Routing  '
+'Purge Buffer'
+'Send Packet '
+'Recv. Packet'
+'Split -ALLs '
+'Kill -ALLs  '
+'Uploading   '
+'Downloading '
+'Find Files  '
+'Synchronise '
+'Sending Wake'
+'Listening   '
+'Find Files  '
+'Waiting     '
+'Waiting     '
+'Answering   '
+'Exiting Call'
+'Check Nodes '
+'Security    '
+'Waiting     '
+'Waiting     '
+'Dialling    '
+'Awaiting    '
+'Aborting    '
+'Finished?   '
+'Call Summary'
+'Terminal    '
+'Starting Up '
+'From ',srce,' To ',dest
+'Number of packets: ',pkts,' totalling ',bytes,' bytes'
+'Sending   ',filename,', ',blocks,' blocks of 1024 bytes'
+'Sending   '
+'Receiving ',filename,', ',blocks,' blocks of 1024 bytes'
+'Receiving ' 
+'Sending APNS wake-up sequence (',times,' of 10)...'
+(Direct)
+(Local)
+(Routed)
+APNS Standard Modem
+APNS Wait finished
+Checking outbound directory
+Checking inbound directory
+Connected to '+handshake.sender+' who has '+s+' files to send
+Caller requested that no files be sent
+Carrier Detect;
+Carrier detected
+Dialling sites. Session
+Dialling '+currsite.name+' (Site '+currsite.site+') Attempt
+Dialling until
+Dial interrupted from keyboard
+Elapsed time
+Executing: 
+Files have already been sent to this site
+Finished dialling:
+Handshake initiated
+Initialising modem, 
+Inbound : '+transfer.name+' '+s+' bytes. '+thruput
+Key Pressed;
+Misnamed packet: 
+Modem Abort;
+Modem Response;
+Modem reports
+Modem would not dial number
+No DCD asserted
+Outbound: '+transfer.name+' '+s+' bytes. '+thruput
+Press any key ('+s+')
+Press any key to continue (or wait '+s+' seconds)
+Please wait...
+Rerouting:
+Size:
+Successful session
+Successful transfer with site
+Time Up;
+We have '+s+' files to send
+Waiting for APNS caller to commence communications...
+We have '+s+' files to send
+Waiting for answer window
+Waiting to begin auto-answer mode
+Waiting for a call
+Waiting for dialling window
+Waiting for auto-dial window to start
+Waiting to dial
+APNS Command-Line Usage Summary
+Where # is the Dialling Session Number, ss is the time window start hour and
+ff is the time window finish hour.
+The default Dialling Session Number is 1, so APNS or APNS DIAL are equivalent
+to APNS DIAL1
+The WAITONCE command allows immediate use in answering mode.
+The DWssff command controls the Dialling Window, and WWssff command controls
+the Answer Window.
+The TERM command starts Terminal Mode
+[Header,
+Data,
+Response]
+has been unobtainable for '+s+' days
+while reading the Node List
+while opening log file
+while reading configuration file
+º ÕÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ APNS Status ÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¸ º
+º ÖÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ Modem Communications ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ· º

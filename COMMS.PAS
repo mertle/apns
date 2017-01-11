@@ -1,24 +1,43 @@
-{$A+,B-,D-,E-,F-,I-,L-,N-,O-,R-,S-,V-}
-{$M 1024,0,655360}
+{$A+,B-,D-,E-,F-,G+,I-,L-,N-,O-,R-,S-,V-,X-}
+{$M 1024,0,0}
 
-UNIT      Comms;
+Unit Comms;
 
 { ------------------------------------------------------- }
 { Unit containing procedures and functions for interrupt  }
 { driven control of the asynchronous RS232 port.          }
 {                                                         }
-{  Supports com ports 1, 2, 3 and 4                       }
+{  Supports comm ports 1, 2, 3 and 4 (IBM)                }
+{           comm ports       3 and 4 (Kortex) as 5 and 6  }
+{           comm ports       3 and 4 (Nokia)  as 7 and 8  }
 {                                                         }
+{  All at 300, 1200, 2400, 9600, 19.2, 38.4, 76.8, 115.2  }
+{                                                         }
+{  Last modifed: Oct 1992, 16550-AFN Fifo buffer support  }
+{                Oct 1992, Restore old interrupt mask bit }
 { ------------------------------------------------------- }
 
 INTERFACE
 
 USES      Crt, Dos;
 
-CONST     COM1BASE    = $03F8;         { Base port for COM1: IRQ 4}
-          COM2BASE    = $02F8;         {               COM2: IRQ 3}
-          COM3BASE    = $03E8;         {               COM3: IRQ 4}
-          COM4BASE    = $02E8;         {               COM4: IRQ 3}
+TYPE
+
+          COMPORT = Record
+           Base : Word;
+           IRQ  : Byte;
+           Int  : Byte;
+          End;
+
+CONST
+          COMDATA : Array [1..8] Of ComPort = ((Base:$3F8;IRQ:$EF;Int:$C),
+                                               (Base:$2F8;IRQ:$F7;Int:$B),
+                                               (Base:$3E8;IRQ:$EF;Int:$C),
+                                               (Base:$2E8;IRQ:$F7;Int:$B),
+                                               (Base:$370;IRQ:$F7;Int:$B),
+                                               (Base:$270;IRQ:$F7;Int:$B),
+                                               (Base:$3E8;IRQ:$DF;Int:$D),
+                                               (Base:$3E8;IRQ:$FB;Int:$A));
 
           { Protocol Constants }
 
@@ -33,8 +52,6 @@ CONST     COM1BASE    = $03F8;         { Base port for COM1: IRQ 4}
 
           { Serial Port Registers }
 
-          TX          = 0;               { Transmit register }
-          RX          = 0;               { Receive register }
           IER         = 1;               { Interrupt enable }
           IIR         = 2;               { Interrupt ID }
           FCR         = 2;               { FIFO control register }
@@ -43,7 +60,7 @@ CONST     COM1BASE    = $03F8;         { Base port for COM1: IRQ 4}
           LSR         = 5;               { Line status register }
           MSR         = 6;               { Modem status register }
           SCR         = 7;               { Scratch register }
-          DLL         = 0;               { Divisor latch low }
+         {DLL         = 0;}              { Divisor latch low }
           DLH         = 1;               { Divisor latch high }
 
           { Status values for Line Status Register }
@@ -71,8 +88,8 @@ CONST     COM1BASE    = $03F8;         { Base port for COM1: IRQ 4}
 
           DTR         = $01;           { Data Terminal Ready }
           RTS         = $02;           { Request To Send }
-          OUT1        = $04;
-          OUT2        = $08;
+          OUT1        = $04;           { Hayes Reset }
+          OUT2        = $08;           { Enable Interrupts }
           LOOPBIT     = $10;           { Loopback bit }
 
           IMR         = $21;
@@ -87,46 +104,48 @@ CONST     COM1BASE    = $03F8;         { Base port for COM1: IRQ 4}
           MC_INT      = 8;
           RX_INT      = 1;
 
-          COM1        = 1;
-          COM2        = 2;
-          COM3        = 3;
-          COM4        = 4;
-
           NO_PAR      = 0;             { parity settings }
           EV_PAR      = 1;
           OD_PAR      = 2;
+          MA_PAR      = 3;
+          SP_PAR      = 4;
 
           BufSize     = 8192;          { input buffer - 8K }
 
           TimedOut: BOOLEAN = FALSE;   { Used by AuxTB and AuxTC }
-          Direct  : BOOLEAN = FALSE;   { True if direct connection }
-          Abort   : BOOLEAN = FALSE;   { User termination request }
+          NulModem: BOOLEAN = FALSE;   { True if direct connection }
+          Aborting: BOOLEAN = FALSE;   { User termination request }
           Running : BOOLEAN = FALSE;   { True after startup }
 
 VAR       PortBase :  Word;                           { port base address }
+          IntoBase :  Word;                           { port IIR address  }
+          PortNum  :  Word;
+          IntNo    :  Byte;
           PortBuf  :  Array[0..BufSize] of byte;      { input buffer }
           StartBuf,
           EndBuf   :  Integer;
           OldVect  :  Pointer;
+          OldIMR   :  Byte;
 
-
-PROCEDURE SetPort( PortNum : Byte;          {Configure com port}
+          
+procedure SetPort( PortNo  : Byte;          {Configure com port}
                    Baudrate: Longint;
                    Parity,
                    Length,
-                   StopBits :  Integer);
-PROCEDURE OpenComms;                        {Install interrupt routine}
-PROCEDURE CloseComms;                       {Restore interrupt routine}
-PROCEDURE RaiseDTR;                         {Raise data terminal ready}
-PROCEDURE LowerDTR;                         {Lower data terminal ready}
-FUNCTION CharWaiting :  Boolean;            {True if byte waiting in buffer}
-FUNCTION GetAux :  Byte;                    {Returns next byte from buffer}
-PROCEDURE SendAux(b : Byte);                {Send single byte to com port}
-PROCEDURE AuxWrite(StrToSend :  String);    {Send a string to the com port}
-PROCEDURE RawSend(StrToSend : String);      {Send a string byte by byte}
-FUNCTION CarrierDetect :  Boolean;          {True if carrier detected}
-FUNCTION AuxTB(Time :  Word) :  Byte;       {Aux input with time-limit}
-FUNCTION AuxTC(Time :  Word) :  Char;       {As above for character data}
+                   StopBits : Integer);
+procedure OpenComms;                        {Install interrupt routine}
+procedure CloseComms;                       {Restore interrupt routine}
+procedure RaiseDTR;                         {Raise data terminal ready}
+procedure LowerDTR;                         {Lower data terminal ready}
+function CharWaiting :  Boolean;            {True if byte waiting in buffer}
+function GetAux :  Byte;                    {Returns next byte from buffer}
+procedure SendAux(b : Byte);                {Send single byte to com port}
+procedure AuxWrite(S:String);               {Send a string to the com port}
+procedure RawSend(S:String);                {Send a string byte by byte}
+function CarrierDetect :  Boolean;          {True if carrier detected}
+function Abort:Boolean;                     {Gets and resets abort flag}
+function AuxTB(Time :  Word) :  Byte;       {Aux input with time-limit}
+function SetFifo:Boolean;                   {Activate 16550-AFN Fifos}
 
 
 IMPLEMENTATION
@@ -135,85 +154,70 @@ IMPLEMENTATION
 { This is the the new asynchronous interrupt routine. }
 { --------------------------------------------------- }
 
-PROCEDURE AsyncInt;  INTERRUPT;
+procedure asyncint; interrupt;
 
-BEGIN
-    Inline( $FA );                          { CLI - Disable interrupts }
-    IF ((Port[PortBase + IIR] and RX_MASK) = RX_ID) AND
-       ((Port[PortBase + LSR] and $10) = 0)
-      THEN BEGIN
-        PortBuf[EndBuf] := Port[PortBase + RX];
-        Inc(EndBuf);
-        EndBuf := EndBuf MOD BufSize;
-      END;
-    Port[ICR] := EOI;
-    Inline( $FB );                          { STI - restart interrupts }
-END;
+begin
+ inline($FA);                          { CLI - Disable interrupts }
+ if ((port[intobase] and RX_MASK)=RX_ID) then begin
+  portbuf[endbuf]:=port[portbase];
+  inc(endbuf);
+  endbuf:=endbuf mod bufsize;
+ end;
+ port[ICR]:=EOI;
+ inline($FB);                          { STI - restart interrupts }
+end;
 
 
 { --------------------------------------------- }
 { Enable the new asynchronous interrupt driver. }
 { --------------------------------------------- }
 
-PROCEDURE InterruptEnable(Pnum :  Integer);
+procedure interruptenable;
 
-VAR       c,
-          IntNo :  Integer;
+var       
+ c:byte;
 
-BEGIN
-    Inline( $FA );                          { CLI - Disable interrupts }
+begin
+ inline($FA);                         { cli - disable interrupts }
+ intno:=comdata[portnum].int;
 
-    CASE Pnum OF
-      COM1,COM3 :  IntNo := $0C;
-      COM2,COM4 :  IntNo := $0B;
-    END;
+ getintvec(intno,oldvect);            { save the old interrupt contents }
+ setintvec(intno,@asyncint);          { now point to our routine }
 
-    GetIntVec(IntNo, OldVect);            { save the old interrupt contents }
-    SetIntVec(IntNo, @AsyncInt);          { now point to our routine }
+ c:=port[portbase+MCR] or mc_int;
+ port[portbase+MCR]:=c;
+ port[portbase+IER]:=rx_int;
 
-    c := Port[PortBase + MCR] or MC_INT;
-    Port[PortBase + MCR] := c;
-    Port[PortBase + IER] := RX_INT;
+ OldIMR:=port[IMR] and not(comdata[portnum].irq);
+ c:=port[IMR] and comdata[portnum].irq;
+ port[IMR]:=c;
 
-    CASE Pnum OF
-      COM1,COM3 :  c := Port[IMR] and IRQ4;
-      COM2,COM4 :  c := Port[IMR] and IRQ3;
-    END;
-
-    Port[IMR] := c;
-    Inline( $FB );                          { STI - restart interrupts }
-END;
+ inline($FB);                         { sti - restart interrupts }
+end;
 
 
 { ------------------------------------------------------------- }
 { Return control to the original asynchronous interrupt driver. }
 { ------------------------------------------------------------- }
 
-PROCEDURE InterruptDisable(Pnum :  Integer);
+PROCEDURE InterruptDisable;
 
-VAR       c,
-          IntNo :  Integer;
+VAR
+ c:byte;
 
 BEGIN
-    CASE Pnum OF
-      COM1,COM3 :  BEGIN
-                     c := Port[IMR] or (NOT IRQ4);
-                     IntNo := $0C;
-                   END;
-      COM2,COM4 :  BEGIN
-                     c := Port[IMR] or (NOT IRQ3);
-                     IntNo := $0B;
-                   END;
-    END;
 
-    Inline( $FA );                          { CLI - Disable interrupts }
-    Port[IMR] := c;
-    Port[PortBase + IER] := 0;
-    c := Port[PortBase + MCR] and (NOT MC_INT);
-    Port[PortBase + MCR] := c;
+ c:=port[IMR] or OldIMR;
 
-    SetIntVec(IntNo, OldVect);         { restore the old interrupt contents }
-    Inline( $FB );                     { STI - restart interrupts }
+ Inline( $FA );                    { CLI - Disable interrupts }
+ Port[IMR] := c;
+ Port[PortBase + IER] := 0;
+ c := Port[PortBase + MCR] and (NOT MC_INT);
+ Port[PortBase + MCR] := c;
+ Port[PortBase + FCR] := 0;
+
+ SetIntVec(IntNo, OldVect);         { restore the old interrupt contents }
+ Inline( $FB );                     { STI - restart interrupts }
 END;
 
 
@@ -221,56 +225,54 @@ END;
 { Set up the port parameters. }
 { --------------------------- }
 
-PROCEDURE SetPort( PortNum : Byte;
+PROCEDURE SetPort( PortNo  : Byte;
                    Baudrate: Longint;
                    Parity,
                    Length,
                    StopBits: Integer);
 
-VAR       c,
-          Temp,
-          Divisor :  Integer;
+VAR
+ c,temp:byte;
+ divisor:word;
 
 BEGIN
-    CASE PortNum OF
-      COM1 :  PortBase := COM1BASE;
-      COM2 :  PortBase := COM2BASE;
-      COM3 :  PortBase := COM3BASE;
-      COM4 :  PortBase := COM4BASE;
-    END;
 
-    CASE BaudRate OF
-     19200 :  Divisor := 6;
-      9600 :  Divisor := 12;
-      4800 :  Divisor := 24;
-      2400 :  Divisor := 48;
-      1200 :  Divisor := 96;
-       600 :  Divisor := 192;
-       300 :  Divisor := 384;
-      else;
-    END;
-    If BaudRate=115200 then Divisor:=1;
-    If BaudRate= 76800 then Divisor:=2;
-    If BaudRate= 38400 then Divisor:=3;
+ PortNum := PortNo;
+ PortBase := ComData[PortNum].Base;
+ IntoBase := PortBase + 2;
 
-    Inline( $FA );                          { CLI - Disable interrupts }
-    c := Port[PortBase + LCR];
-    Port[PortBase + LCR] := (c or $80);
-    Port[PortBase + DLL] := lo(Divisor);
-    Port[PortBase + DLH] := lo(Divisor SHR 8);
-    Port[PortBase + LCR] := c;
+ CASE BaudRate OF
+  19200 :  Divisor := 6;
+   9600 :  Divisor := 12;
+   4800 :  Divisor := 24;
+   2400 :  Divisor := 48;
+   1200 :  Divisor := 96;
+    600 :  Divisor := 192;
+    300 :  Divisor := 384;
+   else;
+ END;
+ If BaudRate=115200 then Divisor:=1;
+ If BaudRate= 76800 then Divisor:=2;
+ If BaudRate= 38400 then Divisor:=3;
 
-    Temp := Length - 5;
-    IF StopBits = 2 THEN
-      Temp := Temp or 4;
-    CASE Parity OF
-      NO_PAR :  Temp := Temp or $00;
-      OD_PAR :  Temp := Temp or $08;
-      EV_PAR :  Temp := Temp or $18;
-    END;
-    Port[PortBase + LCR] := Temp;
-    Running := TRUE;
-    Inline( $FB );                          { STI - restart interrupts }
+ Inline($FA);                          { CLI - Disable interrupts }
+ c := Port[PortBase + LCR];
+ Port[PortBase + LCR] := (c or $80);     {Access BRDL and BRDH regs}
+ Port[PortBase {DLL}] := lo(Divisor);
+ Port[PortBase + DLH] := lo(Divisor SHR 8);
+ Port[PortBase + LCR] := c;              {Back to THR / RDR regs}
+
+ Temp := Length - 5;
+ IF StopBits = 2 THEN Temp := Temp or 4;
+ CASE Parity OF
+  NO_PAR :{ Temp := Temp or $00};
+  OD_PAR :  Temp := Temp or $08;
+  EV_PAR :  Temp := Temp or $18;
+  MA_PAR :  Temp := Temp or $28;
+  SP_PAR :  Temp := Temp or $38;
+ END;
+ Port[PortBase + LCR] := Temp;
+ Inline($FB);                          { STI - restart interrupts }
 END;
 
 
@@ -278,231 +280,237 @@ END;
 { Open the port for communicatons. }
 { -------------------------------- }
 
-PROCEDURE OpenComms;
+procedure opencomms;
 
-VAR       c,
-          Pnum :  Integer;
+var
+ c:byte;
 
-BEGIN
-    StartBuf := 0;
-    EndBuf := 0;
+begin
+ startbuf:=0;
+ endbuf:=0;
+ running:=true;
+ inline($FA);                          { CLI - Disable interrupts }
 
-    Inline( $FA );                          { CLI - Disable interrupts }
-    CASE PortBase OF
-      COM1BASE :  Pnum := COM1;
-      COM2BASE :  Pnum := COM2;
-      COM3BASE :  Pnum := COM3;
-      COM4BASE :  Pnum := COM4;
-    END;
-    InterruptEnable(Pnum);
-    c := Port[PortBase + MCR] or DTR or RTS;
-    Port[PortBase + MCR] := c;
-    Inline( $FB );                          { STI - restart interrupts }
-END;
+ interruptenable;
+ c:=port[portbase+MCR] or DTR or RTS;
+ port[portbase+MCR]:=c;
+
+ inline($FB);                          { STI - restart interrupts }
+end;                
 
 
 { --------------------------------------- }
 { Shut down the comms port when finished. }
 { --------------------------------------- }
 
-PROCEDURE CloseComms;
+procedure closecomms;
 
-VAR       Pnum :  Integer;
-
-BEGIN
-    Inline( $FA );                          { CLI - Disable interrupts }
-    CASE PortBase OF
-      COM1BASE :  Pnum := COM1;
-      COM2BASE :  Pnum := COM2;
-      COM3BASE :  Pnum := COM3;
-      COM4BASE :  Pnum := COM4;
-    END;
-    Port[PortBase + MCR] := 0;
-    InterruptDisable(Pnum);
-    Inline( $FB );                          { STI - restart interrupts }
-END;
+begin
+ inline($FA);                          { CLI - Disable interrupts }
+ port[portbase+MCR]:=0;
+ interruptdisable;
+ inline($FB);                          { STI - restart interrupts }
+ running:=false;
+end;
 
 
 { -------------------------------- }
 { Set 'Data Terminal Ready' to on. }
 { -------------------------------- }
 
-PROCEDURE RaiseDTR;
+procedure raisedtr;
 
-VAR       c :  Integer;
+var
+ c:byte;
 
-BEGIN
-    c := Port[PortBase + MCR] or DTR;
-    Inline( $FA );                          { CLI - Disable interrupts }
-    Port[PortBase + MCR] := c;
-    Inline( $FB );                          { STI - restart interrupts }
-END;
+begin
+ c:=port[portbase+MCR] or DTR;
+ inline($FA);                          { CLI - disable interrupts }
+ port[portbase+MCR]:=c;
+ inline($FB);                          { STI - restart interrupts }
+end;
 
 
 { --------------------------------- }
 { Set 'Data Terminal Ready' to off. }
 { --------------------------------- }
 
-PROCEDURE LowerDTR;
+procedure lowerdtr;
 
-VAR       c :  Integer;
+var
+ c:byte;
 
-BEGIN
-    c := Port[PortBase + MCR];
-    IF (c and DTR) = DTR THEN
-      BEGIN
-        Dec(c);                             { DTR = 1, thus dec = no DTR}
-        Inline( $FA );                      { CLI - Disable interrupts }
-        Port[PortBase + MCR] := c;
-        Inline( $FB );                      { STI - restart interrupts }
-      END
-END;
+begin
+ c:=port[portbase+MCR];
+ if (c and DTR)=DTR then begin
+  dec(c);                           { DTR = 1, thus dec = no DTR}
+  inline($FA);                      { CLI - disable interrupts }
+  port[portbase+MCR]:=c;
+  inline($FB);                      { STI - restart interrupts }
+ end;
+end;
 
 
 { ------------------------------------------------------------- }
 { Returns true if character(s) are waiting in the input buffer. }
 { ------------------------------------------------------------- }
 
-FUNCTION CharWaiting :  Boolean;
+function charwaiting:boolean;
 
-BEGIN
-    CharWaiting := (EndBuf <> StartBuf);
-END;
+begin
+ charwaiting:=(endbuf<>startbuf);
+end;
 
 
 { ------------------------------------------------------- }
 { Returns the next character waiting in the input buffer. }
 { ------------------------------------------------------- }
 
-FUNCTION GetAux :  Byte;
+function getaux:byte;
 
-BEGIN
-    GetAux := PortBuf[StartBuf];
-    StartBuf := succ(StartBuf) MOD BufSize;    { wrap-around buffer if full }
-END;
+begin
+ getaux:=portbuf[startbuf];
+ startbuf:=succ(startbuf) mod bufsize;    { wrap-around buffer if full }
+end;
 
 
 { ------------------------------------------------------------------- }
 { This procedure is called by AuxWrite and actually does the sending. }
 { ------------------------------------------------------------------- }
 
-PROCEDURE SendAux(b :  Byte);
+procedure sendaux(b:byte);
 
-VAR       timeout :  Word;
+var
+ timeout:word;
 
-BEGIN
-    Inline( $FA );                          { CLI - Disable interrupts }
-    timeout := $FFFF;
-    Port[PortBase + MCR] := OUT2 or DTR or RTS;
-    WHILE ((Port[PortBase + MSR] and CTS) = 0) and (timeout > 0) DO
-      Dec(timeout);
-    timeout := $FFFF;
-    WHILE ((Port[PortBase + LSR] and DSR) = 0) and (timeout > 0) DO
-      Dec(timeout);
-    Port[PortBase + TX] := b;
-    Inline( $FB );                          { STI - restart interrupts }
-END;
+begin
+ inline($FA);                          { CLI - disable interrupts }
+ timeout:=$FFFF;
+ port[portbase+mcr]:=OUT2 or DTR or RTS;
+ while ((port[portbase+msr] and CTS)=0) and (timeout>0) do
+  dec(timeout);
+ timeout:=$FFFF;
+ while ((port[portbase+LSR] and DSR)=0) and (timeout>0) do
+  dec(timeout);
+ port[portbase]:=b;
+ inline($FB);                          { sti - restart interrupts }
+end;
 
 
 { ---------------------------------------- }
 { Send the given string to the RS232 port. }
 { ---------------------------------------- }
 
-PROCEDURE AuxWrite(StrToSend :  String);
+procedure auxwrite(s:string);
 
-VAR       Count,
-          Psn,
-          OldPsn:  Byte;
+var
+ loop,psn:byte;
 
-BEGIN
-    OldPsn := 0;
-    Psn := POS('^',StrToSend);
-    WHILE Psn > OldPsn DO BEGIN    { Control character }
-      Psn := POS('^',StrToSend);
-      IF Length(StrToSend) > Psn then BEGIN
-        StrToSend[Succ(Psn)] := Chr(Ord(UPCASE(StrToSend[Succ(Psn)]))-64);
-        DELETE(StrToSend,Psn,1);
-      END;
-      OldPsn := Psn;
-      Psn := POS('^',StrToSend);
-    END;
-    FOR Count := 1 to Length(StrToSend) DO
-      CASE StrToSend[ Count ] OF
-        '|' :  SendAux(13);                 { Carriage Return }
-        '~' :  Delay(500);                  { 1/2 second pause }
-      ELSE
-        SendAux(Ord(StrToSend[Count]));
-      END
-END;
+begin
+ psn:=1;
+ while psn<length(s) do begin
+  if s[psn]='^' then begin
+   delete(s,psn,1);
+   s[psn]:=chr(ord(upcase(s[psn]))-64);
+  end;
+  inc(psn);
+ end;
+ 
+ for loop:=1 to length(s) do begin
+  case s[loop] of
+   '|':sendaux(13);                 { carriage return }
+   '~':delay(500);                  { 1/2 second pause }
+   else sendaux(ord(s[loop]));
+  end;
+  delay(1);
+ end;
+end;
 
 
 { ---------------------------------------- }
 { Sends the given string to the modem raw. }
 { ---------------------------------------- }
 
-PROCEDURE RawSend(StrToSend :  String);
+procedure rawsend(s:string);
 
-VAR       Count:Byte;
+var
+ loop:byte;
 
-BEGIN
-    FOR Count := 1 to Length(StrToSend) DO SendAux(Ord(StrToSend[Count]));
-END;
+begin
+ for loop:=1 to length(s) do sendaux(ord(s[loop]));
+end;
 
 
 { --------------------------------------------------- }
 { Returns true if a Carrier Detect signal is present. }
 { --------------------------------------------------- }
 
-FUNCTION CarrierDetect :  Boolean;
+function carrierdetect:boolean;
 
-BEGIN
-    CarrierDetect := Running and ((Port[PortBase + MSR] and CD = CD) or Direct);
-END;
+begin
+ carrierdetect := running and ((port[portbase + MSR] and CD = CD) or nulmodem);
+end;
+
+
+{ --------------------------------------- }
+{ Allows main program to get abort status }
+{ --------------------------------------- }
+
+function abort:boolean;
+
+begin
+ abort:=aborting;
+ aborting:=false;
+end;
 
 
 { ----------------------------------------- }
 { Allows user to escape during timed inputs }
 { ----------------------------------------- }
 
-PROCEDURE TestAbort;
+procedure testabort;
 
-BEGIN
-    Abort:=(KeyPressed and (ReadKey=#27)) or (not carrierdetect);
-END;
+var
+ c:char;
+
+begin
+ c:=#0;
+ if keypressed then c:=readkey;
+ aborting:=(c=#27);
+end;
 
 
 { ------------------------------------------ }
 { Reads byte from the com port with timeout. }
 { ------------------------------------------ }
 
-FUNCTION AuxTB(Time: Word): Byte;
+function auxtb(time:word):byte;
 
-BEGIN
-    Time:=Round(Time/10);
-    Abort:=False;
-    TimedOut:=False;
-    If CharWaiting then AuxTB:=GetAux else begin
-     Repeat
-      Delay(10);
-      TestAbort;
-      Dec(Time);
-     Until Abort or (Time=0) or CharWaiting;
-     If CharWaiting then AuxTB:=GetAux else begin
-      AuxTB:=255;
-      TimedOut:=True;
-     End;
-    End;
-END;
+begin
+ timedout:=false;
+ time:=round(time/10);
+ if charwaiting then auxtb:=getaux else begin
+  repeat
+   delay(10);
+   testabort;
+   dec(time);
+  until aborting or (time=0) or charwaiting;
+  if charwaiting then auxtb:=getaux else begin
+   auxtb:=255;
+   timedout:=true;
+  end;
+ end;
+end;
 
+{ ------------------------------- }
+{ Activate 16550-AFN Fifo buffers }
+{ ------------------------------- }
 
-{ ------------------------------------------ }
-{ Reads char from the com port with timeout. }
-{ ------------------------------------------ }
+function SetFifo:Boolean;
 
-FUNCTION AuxTC(Time: Word): Char;
+begin
+ port[portbase+FCR]:=$01;
+ SetFifo:=(port[portbase+FCR] and $C0)=$C0;
+end;
 
-BEGIN
-    AuxTC:=Chr(AuxTB(Time));
-END;
-
-END.  { of Comms unit }
+end.  { of Comms unit }

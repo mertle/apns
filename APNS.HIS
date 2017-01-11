@@ -1,0 +1,128 @@
+2.15 October 1992
+ÄÄÄ> Encrypted configuration file
+ÄÄÄ> Won't attempt to dial if sitecode or telephone number is blank
+ÄÄÄ> Routing multiple files to same destination now works ok
+ÄÄÄ> Will only clean up files in RECV directory if they contain routed files
+ÄÄÄ> Reads .LZH files with level 0 and level 1 headers (Route.Inc)
+ÄÄÄ> Messages before modem initialisation are in correct window now
+ÄÄÄ> Added tagging of files to send / route in ApFile
+ÄÄÄ> Rewrote HangUp again, to prevent modem retrain latching onto dialtone
+ÄÄÄ> Tidied up the display during file transfer
+ÄÄÄ> More network aware, won't trash files it can't open
+ÄÄÄ> Install program will modify upload and download dirs automatically
+ÄÄÄ> ApFile now uses the Utility library
+ÄÄÄ> Modified the way days failed is recorded for WhenSend and Never sites
+ÄÄÄ> ApFile mods for multiple drive letters
+ÄÄÄ> GMT difference using new Unix-style dates, or old method
+ÄÄÄ> Deleting records in ApConfig (modems, events, sites) improved
+ÄÄÄ> Scheduler: User can set a country-code for events
+ÄÄÄ> Improvements to Routing (to -ALL), and Routing and Sending to same site
+ÄÄÄ> Files to -ALL that don't go to all sites are sent individually
+ÄÄÄ> ApFile: Send to -ALL, releases file buffer memory for shell to LHA
+ÄÄÄ> APNS original date and time is maintained on transferred files
+ÄÄÄ> ApFile, increased number of files that can be read per directory to 2500
+ÄÄÄ> Ability to process inbound files in historical order
+ÄÄÄ> Fixed problem quitting when there are only WhenSend sites left to dial
+ÄÄÄ> Added multiple dialling sessions, to effectively split the nodelist
+ÄÄÄ> Multiple parameters on the startup command-line (actions, time windows)
+ÄÄÄ> Fixed cosmetic bug validating Date Active field in Scheduler Events
+ÄÄÄ> Added very simple terminal mode for accessing modem direct
+ÄÄÄ> Added option to control whether site's clock is updated from remote
+ÄÄÄ> Changed compiler to Borland Pascal v7.00
+ÄÄÄ> Added new limited demo which transfers files but zeroes contents
+ÄÄÄ> Eliminated need for English.Inc (added Translate utility)
+ÄÄÄ> ApSched would run ENDMONTH events on Saturday if Sunday was the month end
+ÄÄÄ> ApConfig now uses the Utility library (reduced memory requirements)
+ÄÄÄ> ApFile fixed bug changing to a floppy drive with no disk present
+ÄÄÄ> Added disk buffering to the receive file routine (helps at 9600+ bps)
+ÄÄÄ> Changed from a percentage to actual cps rate on file transfer
+ÄÄÄ> Localised block receive and CRC routines in file transfer
+
+2.10 September 1992, Added ApFile file manager / sender / router
+ÄÄÄ> Fixed bug in ApConfig screen colours setup
+ÄÄÄ> Made the session password the ApConfig password as well, and hid display
+ÄÄÄ> Improved the help for ATDT and ATDP dial prefix selection
+ÄÄÄ> Added display of which Com ports were located by the BIOS
+ÄÄÄ> Optional control of when a site is dialled, everyday, when sending, never
+ÄÄÄ> Added control over 'DEMO' site-codes, won't answer or dial out
+ÄÄÄ> CRC routine is now slightly quicker
+ÄÄÄ> Applied Borland's fix to the Delay procedure for 486 machines
+ÄÄÄ> Fixed the bug that made APNS repeatedly start and exit for an hour
+ÄÄÄ> Altered status line and made screen windows wider
+ÄÄÄ> Cleaned up some old unused variables in ApConfig
+ÄÄÄ> Rewrote the way the 'PickList' window works on databases
+ÄÄÄ> User defined COM 5 is detected by Com Ports display
+ÄÄÄ> Added facility to import and export the Modem List as a text file
+ÄÄÄ> Modem list now contains 100+ entries, all UK / European models
+ÄÄÄ> Fixed bug; APNS would wait until 5 mins past any hour before dialling
+ÄÄÄ> ApConfig will load in less memory, just Sorting won't work
+ÄÄÄ> Detects 8088 and 8086 processors and exits gracefully
+
+2.02 Fixed bps rate display on the status line
+ÄÄÄ> Window display positions fixed on return from DOS
+ÄÄÄ> Display of all packets in SEND/RECV directories, misnamed packets etc
+ÄÄÄ> BPS rate changes back to setup value before re-initialisations
+ÄÄÄ> Packets to '-ALL' are listed in inbound / outbound displays
+ÄÄÄ> Standard defaults are present when Add A New Modem is selected
+ÄÄÄ> Fixed bug that would allow COM0 in ApConfig
+ÄÄÄ> Imported 50 new modems into the APNS list
+ÄÄÄ> 'Modified' is added to the modem name when a standard cfg is changed
+ÄÄÄ> Added APDELAY to allow incoming support calls
+ÄÄÄ> Defaults for timeslot are 23 -> 07
+ÄÄÄ> Added support for 16550-AFN Fifo communications buffers
+ÄÄÄ> Added first letter selection to any 'PickList' window (ApConfig)
+ÄÄÄ> Improved ApConfig logging, and queries on save / delete
+ÄÄÄ> Dial window starts at 5 minutes past the hour
+ÄÄÄ> In ApConfig, scheduler priorities are set to AAAA, BBBB etc after sort
+ÄÄÄ> APNS logging modified slightly
+ÄÄÄ> ApDelay logs access to DOS and support window close-downs
+ÄÄÄ> Summary of dialling activity written to APNS.SUM
+ÄÄÄ> Modified the way junk characters are receieved in Wait For A Call
+ÄÄÄ> When all sites have been dialled, or the six attempts are up, APNS aborts
+ÄÄÄ> Code for oneway transfers was buggy, corrected to reflect send/recv order
+ÄÄÄ> Added config switch for use of 16550 Fifo buffers, Kortex again
+ÄÄÄ> ApConfig can no longer change the line parameters from 8N1
+
+2.01 Added display of current function in bottom left-hand corner
+ÄÄÄ> Fixed display of received strings
+ÄÄÄ> Added extra room for expansion in the various APNS data files
+ÄÄÄ> Made updating the site's clock optional for each site (for international)
+
+{ From version 2, version numbers will only change when programs are       }
+{ not comms compatible (ie, cannot communicate between different versions) }
+
+2.00 June 1992, Modem list capability
+ÄÄÄ> New display code
+
+1.50 File transfer code rewritten
+
+1.11 Handshake packets allow space for further expansion
+
+1.10 'Aurora Wait' incorporated into APNS.EXE
+
+1.07 Half way house to seperate programs (v1.10) never used
+ÄÄÄ> Bug: (0.90-1.06) handshake only used 8 bit checksum not 16 bit CRC
+
+1.06 Debugging version
+ÄÄÄ> Comms-compatible with version 1.04
+1.05 ApConfig extended to configure scheduler
+ÄÄÄ> Included polling delay for often-retried numbers
+ÄÄÄ> Added checks for Pc-Anywhere and Carbon Copy TSRs
+ÄÄÄ> Comms-compatible with version 1.04
+1.04 June 1991, Reversed APNS / Aurora send / receive order
+ÄÄÄ> ApConfig extracted to allow online configuration
+
+1.03 Fixed handshaking problems
+ÄÄÄ> this is incompatible with previous versions as the handshaking packets
+ÄÄÄ> contain records for time and date transfer
+
+1.02 Changed compiler to Turbo Pascal v6.00
+ÄÄÄ> Definable delay to avoid MNP train problems
+1.01 Bug fixes from release version
+ÄÄÄ> Added broadcast file extension '.LZH' received by all sites
+
+1.00 March 1991, bug in handshake
+
+0.97 Field Beta Test
+0.95 Field Beta Test
+0.90 October 1990, Initial testing

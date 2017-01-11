@@ -1,0 +1,308 @@
+- APCONFIG started
+! Please report
+Press any key ('+s+')
+Press any key to continue or wait '+s+' seconds
+Help
+* Press any key for more *
+Error
+Com-Ports
+is Installed
+was not found
+APNS Modem type
+Initialisation
+Dial prefix
+Auto-answer on
+Hang up connect
+Name of this modem-type, manufacturer, speed etc
+Command necessary to initialise the modem
+Modem dial prefix, use ATDP for Pulse, ATDT for Tone
+Command necessary to enable auto-answer
+Command necessary to hang-up the modem
+Auto-Answer
+Hang Up
+Confirm Action
+Do you want to save
++ Modem '+currmodem.name+' modified
+Add a Modem
+Delete
+Do you want to delete
++ Modem '+currmodem.name+' deleted
+Error','Not enough memory for sort
+Output Filename
+Import Filename
+\ MODEMS
+Modems
+Add Modem
+Edit Modem
+Delete Modem
+Sort List
+Output Text
+Import Text
+Add a new modem to the APNS list
+Edit or view a defined modem entry
+Delete a modem from the APNS list
+Alphabetically sort the modem list
+Output the APNS Modem List to a text file
+Import the APNS Modem List from a text file
+ \ CHOOSE MODEM
+Use Up, Down, PgUp, PgDn, Home and End to locate modem
+Select
+Error','There are no modems to select from
+Edit
+Error','There are no modems to edit
+Error','There are no modems to delete
+\ SCREEN AND COLOUR
+Screen and Colour
+Main foreground colour
+Main background colour
+Window foreground colour
+Window background colour
+Menu option colour
+Window border style
+Highlight foreground colour
+Highlight background colour
+Sound
+Direct screen writes
+Snow checking
+Change standard text foreground colour
+Change standard text background colour
+Change window foreground colour
+Change window background colour
+Change menu option letter colour
+Change window border characters
+Change highlight bar foreground colour
+Change highlight bar background colour
+Toggle on / off bells and sound effects
+Turn off (BIOS writes) if direct writes cause problems
+Turn on snow checking for IBM made CGA adapters
+\ FILE SETUP
+File Setup
+Outgoing Files:
+Incoming Files:
+Directory for outgoing files
+Directory for incoming files
+Outgoing Files Path
+Incoming Files Path
+\ MODEM SETUP
+Modem Setup
+Modem name :
+Initialise :
+Hang up    :
+Dial prefix:
+Answer call:
+Name of the APNS modem-type in use
+Modem initialisation command
+Modem hang up command
+Modem dial prefix, use ATDP for Pulse, ATDT for Tone
+Modem auto-answer command
+Initialise
+Hang Up
+Dial Prefix
+Auto-Answer
+\ APNS SETUP
+Apns Setup
+Dial period in seconds   :
+Inter-Dial pause minutes :
+Maximum redials of a Site:
+Dial Window Start Hour   :
+Dial Window Finish Hour  :
+Answer Window Start Hour :
+Answer Window Finish Hour:
+Site Identification Code :
+Connect delay in seconds :
+Dial action:
+Wait action:
+Exit after one call:
+Difference from GMT:
+Clock can be reset :
+Password   :
+Time to wait for a connect (seconds)
+Pause between consecutive dials of one number (minutes)
+Maximum number of re-dials of one site in an evening
+APNS auto-dial window start hour
+APNS auto-dial window finish hour
+APNS auto-answer window start hour
+APNS auto-answer window finish hour
+Site Identification code, 4 characters
+Number of seconds to delay before handshaking
+Command to execute after a successful poll
+Command to execute after a successful call
+Whether APNS will exit after being called once
+Difference (+/-) of local time to GMT in minutes
+Whether clock can be reset by other sites
+Session handshaking password
+Max Dial Attempts
+Dial Start Hour
+Dial Finish Hour
+Wait Start Hour
+Wait Finish Hour
+Use %SITE as parameter (polled site)
+Use %SITE as parameter (polling site)
+Difference between local time and GMT
+Session handshake password
+'Modem','Direct'
+\ COMMS SETUP
+Comms Setup
+Bits per Second:
+COM Port:
+Data Length '+temp+' bits
+Parity:
+Stop-bits:
+connection
+COM 5 (User) Base
+COM 5 (User) IRQ
+COM 5 (user) Int.
+Use FIFO buffers:
+Maximum DTE speed (300 - 115200 bps)
+Communications port (IBM)
+Byte length (usually 8 bits)
+Parity setting (None, Even, Odd, Mark, Space)
+Stop bits (0,1,2) usually 1
+For null-modem links use Direct, normally use Modem
+I/O port base address for COM 5 (User)
+Hardware Interrupt (IRQ) for COM 5 (User)
+Software Interrupt (INT) for COM 5 (User)
+Allow use of FIFO buffers
+Error','Error writing APNS.CFG
+\ SETUP MENU
+Setup
+Screen and colour
+Filenames and paths
+APNS control settings
+Modem settings
+Communications settings
+Undo all changes
+Modify appearance of APNS
+Modify upload and download directories
+Modify APNS control settings
+Modify modem control settings
+Modify communication port parameters
+Restore configuration to undo modifications
+Error','Not enough memory for sorting
+('Fail','Partial','One-way','Success')
+('Always','When Sending','Never');
+Site Name   :
+Site Code   :
+Phone Number:
+Modem Speed :
+When To Dial:
+Dial Session:
+Dial Prefix :
+Update Clock:
+Days Failed :
+Last Status :
+Name used to identify site
+Site Identification, 4 characters
+Phone number including outside line codes and pauses
+Speed of the site modem
+Dial every day, when we have files to send, or never
+Dial session number, for use with multiple sessions
+Modem dial prefix, use ATDP for Pulse, ATDT for Tone
+Update site''s clock from this machine
+APNS will not dial any site unavailable for over 7 days
+Result of the last attempted dial to this site
+Name
+Site ID
+Phone Number
+Session Number
+Dial Prefix
+Confirm Save
+Do you wish to save
++ Site '+currsite.name+' modified
+Add Node
+Confirm Delete
+Do you wish to delete
++ Site '+currsite.name+' deleted
+\ NODE LIST
+Node List
+Add Node to the node list
+Edit existing Node
+Delete existing Node
+Make all Nodes diallable
+Make all Nodes undiallable
+Sort Nodes by name
+Add an new node to the node list
+Change settings for any node
+Permanently remove any node
+Reset the days unreachable flags
+Set all days unreachable flags to 8
+Alphabetically sort the node list
+Use Up, Down, PgUp, PgDn, Home and End to locate site
+Edit
+Edit Node
+Error','There are no entries in the node-list
+Error','There are no entries in the node-list
++ All nodes made diallable
++ All nodes made undiallable
+Event Name :
+DOS Command:
+Priority   :
+Sunday .....
+Monday .....
+Tuesday ....
+Wednesday ..
+Thursday ...
+Friday .....
+Saturday ...
+Once a day :
+Week Number:
+Country    :
+Date active:
+Name used to identify event
+Event DOS Command, use %DATE, %DAY, %MONTH, %YEAR
+Four character event priority
+Does the event occur on a Sunday
+Does the event occur on a Monday
+Does the event occur on a Tuesday
+Does the event occur on a Wednesday
+Does the event occur on a Thursday
+Does the event occur on a Friday
+Does the event occur on a Saturday
+Does the event only run once per day
+Week number for the event (1-52). Specify one or more days as well
+Country Code for this event (32,33,44 etc)
+Date for the event (DD/MM/YY), Wildcards [??/10/??] or ENDMONTH
+Event Name
+Event DOS Command
+Event Priority
+Week No
+Country Code (32,33,44 etc)
+Event Date (DD/MM/YY) or ENDMONTH
++ Event '+currevent.name+' modified
+Add Event
++ Event '+currevent.name+' deleted
+\ SCHEDULER
+Schedule
+Add Event
+Edit Event
+Delete Event
+Sort Events
+Add a new event to the current schedule
+Edit or view a defined schedule event
+Delete an event from the schedule list
+Sort event order by priorities
+\ CHOOSE EVENT
+Use Up, Down, PgUp, PgDn, Home and End to locate event
+Error','There are no events to edit
+Error','There are no events to delete
+Retrieving configuration...
+while reading
+! Configuration file has been tampered with
+Enter the APNS security password
+Password
++ Incorrect password
+Password','Password Incorrect
+Main Menu
+Configuration
+Node List
+Scheduler
+Modem List
+Com-Ports
+Trim Log File
+Configuration sub-menus
+Node-list management menus
+Event schedule management menu
+Modem-list maintenance menu
+Locate standard IBM Com-Ports
+Remove old information from APNS.LOG
++ Configuration modified

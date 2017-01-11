@@ -1,4 +1,4 @@
-{$A+,B-,D-,E-,F-,G-,I-,L-,N-,O-,R-,S+,V-,X-}
+{$A+,B-,D-,E-,F-,G+,I-,L-,N-,O-,P-,Q-,R-,S-,T-,V-,X+,Y-}
 {$M 16384,0,0}
 
 program APNS;
@@ -6,142 +6,92 @@ program APNS;
 {DEFINE debug}
 
 uses
- crt,dos,comms;
+ test186,crt,dos,comms,utility,random6;
+
+const
+ md=50;
 
 {$I lastrev.inc}
-
-{$I english.inc}
-
-{$I crc16.inc}
-
+{$I apcrc.inc}
 {$I apdefs.inc}
-
-type
- screen=array [1..3840] of byte;
+{$I runerr.inc}
+{$I unixtime.inc}
 
 var
- crc:word;
- checksum:byte;
  exitsave:pointer;               {points to termination routine}
-
- thatsallfolks:boolean;          {time for bed?}
+ save:screen;
+ s,laststr:string;
+ crc,sitecrc,loop,parm,wmin,wmax,hour,min,sec:word;
+ ioerror:integer;
+ curport:string[1];
+ thruput:string[9];
 
  setupfile:file of config;       {disk file for setup}
- cfgname:string[128];
+ cfgfile:file of config;
+ logfile:text;
 
- cursor:boolean;                 {holds current cursor state}
- lights:boolean;
- sending:boolean;
-
- c:char;
- reg:registers;                  {global variables}
- s,laststr:string;
- thruput:string[7];
- statusline,time,date,timer:string[80];
- lenlaststr:byte absolute laststr;
- hour,min,sec:word;
- loop:word;
- ocd:boolean;
- oldcolour:byte;
- mode:byte;
  homepath,                       {where .EXT .PRO .CAP files are}
  curpath,                        {directory for upload download etc}
  oldpath,
- curfile:string[128];
- curname:string[8];
- curport:string[1];
- curspeed:string[5];             {global %parameters}
+ curfile,
+ cfgname:string[128];
+
+ r:registers;                    {global variables}
+
+ job:string[12];
+ thatsallfolks:boolean;          {time for bed?}
+ fifotested:boolean;             {FIFO already tested?}
+ lights:boolean;
+ sending:boolean;
+ killdata:boolean;
+ currwindow,currsession:byte;
+ c:char;
+ statusline,time,date,timer:string[80];
+ lenlaststr:byte absolute laststr;
+ ocd:boolean;
+ oldcolour,logwin,phour:byte;
+ curspeed:string[6];             {global %parameters}
 
  dir:dirstr;
  name:namestr;                   {fsplit of invoked name}
  ext:extstr;
 
- cursor_spec:word;
-
  oldx,oldy:byte;                 {window stuff}
- wmin,wmax:word;
 
- cfgfile:file of config;
- logfile:text;
- ioerror:integer;
- ccloaded:boolean;
+ ccloaded,pcloaded,boo:boolean;
+ poller:string[4];
 
 {**************************************************************************}
 
-procedure beep;
-
-begin
- if setup.sound then write(#7);
-end;
-
-{**************************************************************************}
-
-function stringof(c:char;l:byte):string;
+procedure encrconf;
 
 var
- s:string;
+ loop:word;
 
 begin
- s[0]:=chr(l);
- fillchar(s[1],l,c);
- stringof:=s;
+ randseed:=18572;
+ for loop:=1 to sizeof(config) do security[loop]:=security[loop] xor random(256);
 end;
 
 {**************************************************************************}
 
-procedure cursoroff;
+procedure win(b:byte);
 
 begin
- asm
-  mov ah,1
-  mov cx,$2020
-  int $10
- end;
- cursor:=false;
-end;
-
-{**************************************************************************}
-
-procedure cursoron;
-
-begin
- asm
-  mov ah,1
-  mov cx,cursor_spec
-  int $10
- end;
- cursor:=true;
-end;
-
-{**************************************************************************}
-
-procedure centre(s:string);
-
-begin
- gotoxy(((lo(windmax)-lo(windmin))-length(s)+2) shr 1,wherey);
- write(s);
-end;
-
-{**************************************************************************}
-
-function exist(s:string):boolean;
-
-var
- f:file;
-
-begin
- assign(f,s);
- reset(f);
- close(f);
- exist:=(ioresult=0);
-end;
-
-{**************************************************************************}
-
-function flag(test:boolean;inchar:char):char;
-
-begin
- if test then flag:=upcase(inchar) else flag:=inchar;
+ if b<>currwindow then begin
+  case b of
+   1:window(4,2,77,2);
+   2:begin
+      window(5,5,76,12);
+      gotoxy(1,8);
+     end; 
+   3:begin
+      window(5,15,76,22);
+      gotoxy(1,8);
+     end;
+  end;
+  currwindow:=b;
+ end; 
 end;
 
 {**************************************************************************}
@@ -149,7 +99,6 @@ end;
 function getstatus:string;
 
 const
- parities:array[no_par..od_par] of char=('N','E','O');
  startsec:shortint=-1;
  startmin:shortint=-1;
  starthour:shortint=-1;
@@ -159,24 +108,20 @@ const
 
 var
  hun,year,month,day,dow:word;
- s1,s2,s3,s4,s5,s6:string[5];
+ s1,s2,s3:string[4];
+ elapse:string[8];
  temp:string[80];
 
 begin
  gettime(hour,min,sec,hun);
- str(hour:2,s1);
- str(min:2,s2);
- str(sec:2,s3);
- if s1[1]=space then s1[1]:='0';
- if s2[1]=space then s2[1]:='0';
- if s3[1]=space then s3[1]:='0';
+ s1:=itos(hour,2);
+ s2:=itos(min,2);
+ s3:=itos(sec,2);
  time:=s1+':'+s2+':'+s3;
  getdate(year,month,day,dow);
- str(day:2,s1);
- str(month:2,s2);
+ s1:=itos(day,2);
+ s2:=itos(month,2);
  str(year:4,s3);
- if s1[1]=space then s1[1]:='0';
- if s2[1]=space then s2[1]:='0';
  date:=s1+'/'+s2+'/'+s3;
  if carrierdetect then begin
   if startsec<0 then begin
@@ -202,33 +147,21 @@ begin
   minon:=0;
   houron:=0;
  end;
- str(setup.baud:5,s1);
- str(setup.length,s2);
- str(setup.stopbits,s3);
- str(houron:2,s4);
- str(minon:2,s5);
- str(secon:2,s6);
- if s4[1]=space then s4[1]:='0';
- if s5[1]=space then s5[1]:='0';
- if s6[1]=space then s6[1]:='0';
+ s1:=itos(houron,2);
+ s2:=itos(minon,2);
+ s3:=itos(secon,2);
+ elapse:=s1+':'+s2+':'+s3;
  if carrierdetect then
-  timer:='  Elapsed time online '+s4+' hours '+s5+' minutes '+s6+' seconds';
- temp:=' A.P.N.S. ³ '+s1+' ³ '+s2+'ù'+parities[setup.parity]+'ù'+s3+' ³ ';
- if lights then begin
-  if carrierdetect then temp:=temp+'CD.' else temp:=temp+'cd.';
-  if charwaiting then temp:=temp+'RX.' else temp:=temp+'rx.';
-  if sending then temp:=temp+'TX.' else temp:=temp+'tx.';
-  if port[portbase+MSR] and CTS=CTS then temp:=temp+'CTS.' else
-   temp:=temp+'cts.';
-  if port[portbase+MCR] and RTS=RTS then temp:=temp+'RTS.' else
-   temp:=temp+'rts.';
- end else temp:=temp+
-  flag(carrierdetect,'o')+'ù'+
-  flag(direct,'d')+'ùcùpùeùaù'+
-  flag(setup.sound,'s')+'ù'+
-  flag(not setup.direct,'b')+'ù'+
-  flag(setup.snow,'w');
- temp:=temp+' ³ '+s4+':'+s5+':'+s6+' ³ '+time+' '+date+space;
+  timer:='  Elapsed time '+elapse;
+ temp:=' '+job+' ³ '+curspeed+' ³ '+curport+' ³ ';
+ if carrierdetect then temp:=temp+'CD.' else temp:=temp+'cd.';
+ if charwaiting then temp:=temp+'RX.' else temp:=temp+'rx.';
+ if sending then temp:=temp+'TX.' else temp:=temp+'tx.';
+ if port[portbase+MSR] and CTS=CTS then temp:=temp+'CTS.' else
+  temp:=temp+'cts.';
+ if port[portbase+MCR] and RTS=RTS then temp:=temp+'RTS' else
+  temp:=temp+'rts';
+ temp:=temp+' ³ '+elapse+' ³ '+time+' '+date+space;
  getstatus:=temp;
 end;
 
@@ -237,9 +170,9 @@ end;
 procedure status;
 
 var
+ wmin,wmax:word;
  a:byte;
  sl:string[80];
- wmin,wmax:word;
  oc:boolean;
  ox,oy:byte;
 
@@ -270,44 +203,70 @@ end;
 
 {**************************************************************************}
 
-procedure log(var f:text;s:string);
+procedure log(s:string);
+
+var
+ temp:string;
 
 begin
+ temp:=getstatus;
+ if running then win(2);
  writeln(s);
- writeln(f,s);
- status;
+ if s<>'' then s:=time+' '+s;
+ writeln(logfile,s);
+ flush(logfile);
 end;
 
 {**************************************************************************}
 
-{$F+}procedure exitroutine;{$F-}
+procedure qlog(s:string);
 
 var
- x,y:byte;
+ temp:string;
 
 begin
- closecomms;
+ temp:=getstatus;
+ writeln(logfile,time+' '+s);
+ flush(logfile);
+end;
+
+{**************************************************************************}
+
+procedure exitroutine; far;
+
+begin
+ exitproc:=exitsave;
+ if running then closecomms;
+ encrconf;
  if ccloaded then begin
-  reg.ax:=$D001;
-  intr($2F,reg);
+  r.ax:=$D001;
+  intr($2F,r);
  end;
- x:=wherex;
- y:=wherey;
+ if erroraddr<>nil then begin
+  log('! Abnormal program termination. Please report the following:');
+  log('! '+runerror(exitcode));
+  erroraddr:=nil;
+  writeln;
+ end else qlog('- APNS exited ('+date+')');
+ close(logfile);
+ textattr:=7;
  window(1,1,80,25);
  gotoxy(1,25);
  clreol;
- textattr:=7;
  cursoron;
- gotoxy(x,y);
- if erroraddr<>nil then begin
-  str(exitcode,s);
-  log(logfile,'! Abnormal program termination. Please report error '+s);
-  writeln;
+ gotoxy(1,24);
+end;
+
+{**************************************************************************}
+
+procedure errcheck(s:string);
+
+begin
+ ioerror:=ioresult;
+ if ioerror<>0 then begin
+  log('! '+runerror(ioerror)+s);
+  halt;
  end;
- writeln(logfile);
- writeln(logfile,'  APNS exited at '+time+' on the '+date);
- close(logfile);
- exitproc:=exitsave;
 end;
 
 {**************************************************************************}
@@ -316,29 +275,27 @@ procedure anykey(outer:byte;short:boolean);
 
 var
  inner:word;
- c:char;
  s:string[2];
  old:byte;
 
 begin
  cursoroff;
  old:=textattr;
- textcolor(setup.bclr);
- textbackground(setup.fclr);
+ textcolor(colset.bclr);
+ textbackground(colset.fclr);
  writeln;
  repeat
-  str(outer:2,s);
-  if s[1]=' ' then s[1]:='0';
+  s:=itos(outer,2);
   if short then centre('Press any key ('+s+')') else
   centre('Press any key to continue (or wait '+s+' seconds)');
   inner:=0;
   repeat
-   delay(1);
+   delay(10);
    inc(inner);
-  until (inner=1000) or keypressed;
+  until (inner=100) or keypressed;
   dec(outer);
  until (outer=0) or keypressed;
- while keypressed do c:=readkey;
+ while keypressed do readkey;
  textattr:=7;
  if wherey=25 then clreol;
  textattr:=old;
@@ -347,7 +304,21 @@ end;
 
 {**************************************************************************}
 
-procedure quiet;
+procedure quietall;
+
+var
+ c:char;
+
+begin
+ status;
+ c:=upcase(chr(getaux));
+ if lenlaststr=255 then delete(laststr,1,1);
+ laststr:=laststr+c;
+end;
+
+{**************************************************************************}
+
+procedure quietasc;
 
 var
  c:char;
@@ -359,26 +330,6 @@ begin
   if lenlaststr=255 then delete(laststr,1,1);
   laststr:=laststr+c;
  end;
-end;
-
-{**************************************************************************}
-
-procedure replace(var s:string;orig,rep:string;once:boolean);
-
-var
- temp:byte;
- us:string;
-
-begin
- repeat
-  us:='';
-  for temp:=1 to length(s) do us:=us+upcase(s[temp]);
-  temp:=pos(orig,us);
-  if temp>0 then begin
-   delete(s,temp,length(orig));
-   insert(rep,s,temp);
-  end;
- until (temp=0) or once;
 end;
 
 {**************************************************************************}
@@ -400,13 +351,35 @@ end;
 
 {**************************************************************************}
 
+procedure drawbox;
+
+var
+ loop:byte;
+
+begin
+ window(1,1,80,25);
+ write('ÉÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ»');
+ write('º                                                                              º');
+ write('ÇÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¶');
+ write('º ÕÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ APNS Status ÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¸ º'); for loop:=1 to 8 do
+ write('º ³                                                                          ³ º');
+ write('º ÔÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¾ º');
+ write('º ÖÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ Modem Communications ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ· º'); for loop:=1 to 8 do
+ write('º º                                                                          º º');
+ write('º ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½ º');
+ write('ÈÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¼');
+ win(1);
+ centre('APNS Version '+version+' Copyright (c) 1993 Michael E. Ralphson');
+end;
+
+{**************************************************************************}
+
 procedure run(command:string);
 
 var
+ tail,old,oldt,search:string[127];
  via,oldcap:boolean;
- tail,old,oldt:string[128];
  temp:byte;
- search:string[128];
 
 begin
  temp:=pos(space,command);
@@ -438,43 +411,102 @@ begin
  if (ext<>'.EXE') and (ext<>'.COM') then via:=true;
  if not via then via:=not(exist(command));
  if via then begin
-  writeln(lf+'Loading secondary command processor.'+lf);
   tail:='/C '+old+space+tail;
   if old+oldt='' then tail:='';
   command:=getenv('COMSPEC');
- end else writeln(lf+'Running external program.'+lf);
- writeln('Command line: '+command+space+tail+lf);
- exec(command,tail);
- reg.ah:=$0F;
- intr($10,reg);
- if reg.al<>mode then begin
-  reg.ax:=mode;
-  intr($10,reg);
  end;
+ 
+ s:='Executing: '+command+space+tail;
+ if length(s)>70 then s[0]:=#70;
+ qlog('  '+s);
+ win(2);
+ writeln(s);
+ save:=dosptr^;
+ textattr:=7;
+ window(1,1,80,25);
+ clrscr;
+ writeln(s+lf);
+
+ cursoron;
+ exec(command,tail);
+ r.ah:=$0F;
+ intr($10,r);
+ if r.al<>scrmode then begin
+  r.ax:=scrmode;
+  intr($10,r);
+ end;
+ window(1,1,80,24);
+ textcolor(colset.fclr);
+ textbackground(colset.bclr);
+ cursoroff;
+ dosptr^:=save;
+ status;
+ currwindow:=0;
+ win(2);
 end;
 
 {**************************************************************************}
 
-procedure initialise;
+function init(var s:string):boolean;
+
+var
+ chs:word;
+ loop:byte;
+ result:boolean;
+ response:byte;
 
 begin
- writeln;
- with setup do setport(comport,baud,parity,length,stopbits);
- opencomms;
- if setup.cmdinit<>'' then begin
-  sending:=true;
-  status;
-  auxwrite(setup.cmdinit);
-  sending:=false;
-  status;
-  delay(20);
+ job:='Init. Modem ';
+ status;
+ win(3);
+ sending:=true;
+ chs:=0;
+ while charwaiting do response:=getaux;
+ for loop:=1 to length(s) do begin
+  auxwrite(s[loop]);
+  delay(md);
   while charwaiting do begin
    status;
    write(chr(getaux));
-   delay(20);
+   inc(chs);
   end;
  end;
- writeln;
+ sending:=false;
+ status;
+ repeat
+  response:=auxtb(1000);
+  if not timedout then begin
+   write(chr(response));
+   inc(chs);
+  end; 
+ until timedout; 
+ result:=(chs>0) or (s='');
+ if not result then log('! Modem initialisation failed');
+ init:=result;
+end;
+
+{**************************************************************************}
+
+function initialise(var s:string):boolean;
+
+var
+ loop:byte;
+ test:boolean;
+
+begin
+ win(2);
+ write('Initialising modem, ',setup.modemname);
+ with setup do setport(comport,baud,parity,length,stopbits);
+ if not running then opencomms;
+ if setup.usefifos then test:=setfifo else test:=false;
+ if test and (not fifotested) then begin
+  writeln(' (FIFO)');
+  repeat
+   loop:=auxtb(1000);
+  until timedout;
+ end else writeln;
+ fifotested:=true;
+ initialise:=init(s);
 end;
 
 {**************************************************************************}
@@ -482,117 +514,160 @@ end;
 procedure copyright;
 
 begin
- writeln(
-  cr+lf+' ÜÛÛÛÜ      ÛÛÛÛÛÛÛÜ   ÛÛ    ÛÛ     ÜÛÛÛÛÛÛÜ'
- +cr+lf+'ÛÛÛßÛÛÛ     ÛÛ    ÛÛ   ÛÛÛ   ÛÛ     ÛÛß  ßÛÛ                 The'
- +cr+lf+'ÛÛ   ÛÛ     ÛÛ    ÛÛ   ÛÛÛÛ  ÛÛ     ÛÛÜ         Aurora Polling Network System'
- +cr+lf+'ÛÛ   ÛÛ     ÛÛÛÛÛÛÛß   ÛÛßÛÛÜÛÛ      ßÛÛÛÛÜ');
-writeln('ÛÛÛÛÛÛÛ     ÛÛ         ÛÛ  ÛÛÛÛ          ßÛÛ        Designed and Coded by'
- +cr+lf+'ÛÛ   ÛÛ     ÛÛ         ÛÛ   ÛÛÛ     ÛÛÜ  ÜÛÛ         Michael E. Ralphson'
- +cr+lf+'ÛÛ   ÛÛ  Ü  ÛÛ      Ü  ÛÛ    ÛÛ  Ü  ßÛÛÛÛÛÛß  Ü');
-writeln(
-  cr+lf+'Version '+version+' (Last Revision '+lastrev+')',
-  cr+lf+'Copyright (c) 1990-1991 Michael E. Ralphson, All Rights Reserved');
+ writeln;
+ centre('ÚÄÄÄÄÄÄ· ÚÄÄÄÄÄ· ÚÄÄÄÄ·ÚÄ· ÚÄÄÄÄÄ·');   writeln;
+ centre('³ ÖÄÄ¿ º ³ ÖÄ¿ º ³ Ö¿ º³ º ³ ÖÄÄÄ½');   writeln;
+ centre('³ ÓÄÄÙ º ³ ÓÄÙ º ³ º³ º³ º ³ ÓÄÄÄ·');   writeln;
+ centre('³ ÖÄÄ¿ º ³ ÖÄÄÄ½ ³ º³ º³ º ÀÄÄÄ¿ º');   writeln;
+ centre('³ º  ³ º ³ º     ³ º³ ÓÙ º ÚÄÄÄÙ º');   writeln;
+ centre('ÀÄ½  ÀÄ½ ÀÄ½     ÀÄ½ÀÄÄÄÄ½ ÀÄÄÄÄÄ½');   writeln;
+ writeln;
+ centre('The Automated Polling Network System'); writeln;
+ writeln;
+ centre('Release Version '+version); writeln;
+ writeln;
+ centre('Designed and Coded by Michael E. Ralphson'); writeln;
+ writeln;
+ centre('Copyright (c) 1990 - 1993 Michael E. Ralphson, All Rights Reserved');
 end;
 
 {**************************************************************************}
 
-procedure hangup(ask:boolean);
+procedure receive;
+
+var
+ c:char;
+
+begin
+ job:='Receiving   ';
+ status;
+ win(3);
+ c:=upcase(chr(getaux));
+ write(c);
+ if c>#31 then begin
+  laststr:=laststr+c;
+  if length(laststr)=255 then delete(laststr,1,1);
+ end; 
+end;
+
+{**************************************************************************}
+
+procedure hangup;
 
 var
  b:byte;
 
 begin
+ job:='Hanging Up  ';
  status;
- writeln('Hanging up...');
- lowerdtr;
- delay(500);
- raisedtr;
- if carrierdetect then auxwrite(setup.cmdhangup)
-  else sendaux(13);
- delay(100);
- while charwaiting do begin
-  b:=getaux;
-  delay(10);
- end;
- delay(250);
- writeln;
- if carrierdetect and not direct then log(logfile,'* Hangup failed');
+ win(2);
+ repeat
+  delay(500);
+  status;
+  lowerdtr;
+  delay(500);
+  raisedtr;
+  delay(500);
+  laststr:='';
+  if carrierdetect then auxwrite(setup.cmdhangup)
+   else auxwrite(setup.cmdinit);
+  delay(500);
+  while charwaiting do quietall;
+ until ((pos('OK',laststr)<>0) and not carrierdetect) or (keypressed);
+ delay(1000);
+ if (carrierdetect) and (not nulmodem) then log('* Hangup failed');
 end;
 
 {**************************************************************************}
 
+function escpressed:boolean;
+
+var
+ c:char;
+
+begin
+ escpressed:=false;
+ if keypressed then begin
+  c:=readkey;
+  if c=#27 then escpressed:=true;
+ end; 
+ if not carrierdetect then escpressed:=true;
+ if abort then escpressed:=true;
+end;
+
+{**************************************************************************}
+
+{$I route.inc}
 {$I dial.inc}
+{$I terminal.inc}
 
 {**************************************************************************}
 
 { APNS }
 
 begin
- mode:=lastmode;
- if not(mode in [BW80,CO80,MONO]) then begin
-  mode:=CO80;
-  textmode(CO80);
- end;
 
- asm
-  mov ah,3
-  mov bh,3
-  int $10
-  mov cursor_spec,cx
- end;
+ exitsave:=exitproc;
+ exitproc:=@exitroutine;
 
+ checkbreak:=false;
+
+ s:=getstatus;
+
+ writeln('APNS v',version);
+
+ fifotested:=false;
+ currwindow:=0;
+ currsession:=0;
+ job:='Starting Up ';
  lights:=true;
  curfile:='';
+
  s:=fexpand(paramstr(0));
  fsplit(s,dir,name,ext);
  homepath:=dir;
- curname:=name;
+
  s:=homepath+'APNS.LOG';
  assign(logfile,s);
  if exist(s) then append(logfile) else rewrite(logfile);
+ errcheck(' while opening log file');
+ writeln(logfile);
+ qlog('- APNS started ('+date+')');
+
  cfgname:=homepath+'APNS.CFG';
- writeln('Retrieving configuration...');
+
  assign(setupfile,cfgname);
  reset(setupfile);
+ errcheck(' while reading configuration file');
  read(setupfile,setup);
  close(setupfile);
+ errcheck(' while reading configuration file');
 
- ioerror:=ioresult;
- if ioerror<>0 then begin
-  writeln('Error ',ioerror,' reading configuration file');
-  exit;
- end;
+ encrconf;
 
  crc:=0;
- for loop:=1 to sizeof(config)-2 do crc16(checksum,crc,security[loop]);
+ crc16(crc,security,sizeof(security));
  if crc<>setup.crc then begin
-  writeln('Configuration file has been tampered with');
+  crc:=not crc;
+  killdata:=true;
+ end;
+ if crc<>setup.crc then begin
+  log('! Configuration file has been tampered with');
   exit;
  end;
 
  getdir(0,curpath);
 
- exitsave:=exitproc;
- exitproc:=@exitroutine;
-
  {This is the first place the variable SETUP is referenced}
 
- directvideo:=setup.direct;
+ directvideo:=setup.directvideo;
  checksnow:=setup.snow;
  statusline:='';
- direct:=setup.nulmodem;
+ nulmodem:=setup.nulmodem;
 
- if mode<>CO80 then begin
-  setup.fclr:=7;
-  setup.bclr:=0;     {Define monochrome colour scheme}
-  setup.wfclr:=0;
-  setup.wbclr:=7;
-  setup.hfclr:=7;
-  setup.hbclr:=0;
- end;
- textcolor(setup.fclr);
- textbackground(setup.bclr);
+ if scrmode=CO80 then move(setup.fclr,colset,7) else move(monset,colset,7);
+ textcolor(colset.fclr);
+ textbackground(colset.bclr);
  clrscr;
  window(1,1,80,24);
 
@@ -600,42 +675,94 @@ begin
  writeln;
  anykey(9,false);
  clrscr;
+ cursoroff;
+ drawbox;
  thatsallfolks:=false;
  laststr:='';
- cursor:=true;
- str(setup.baud:5,curspeed);
+ timer:='No DCD asserted';
+ cursor:=false;
+ str(setup.baud:6,curspeed);
  str(setup.comport,curport);
  ocd:=false;
+ comdata[5]:=setup.com5;
+
  status;
+ win(2);
 
- writeln(logfile);
- writeln(logfile,stringof('Í',79));
- writeln(logfile);
- writeln(logfile,'  APNS started at '+time+' on the '+date);
-
- initialise;
-
- reg.ah:=$D0;
- reg.al:=0;
- reg.cx:=0;
- intr($2F,reg);
-
- ccloaded:=(reg.al>0) and (reg.bx=$4343);
+ r.ax:=$D000;
+ r.cx:=0;
+ intr($2F,r);
+ ccloaded:=(r.al>0) and (r.bx=$4343);
 
  if ccloaded then begin
-  log(logfile,'! Carbon Copy loaded - disabling');
-  reg.ax:=$D002;
-  intr($2F,reg);
+  log('! Carbon Copy loaded - disabling');
+  r.ax:=$D002;
+  intr($2F,r);
  end;
 
- if paramcount>0 then s:=paramstr(1) else s:='DIAL';
- for loop:=1 to length(s) do s[loop]:=upcase(s[loop]);
- if s='DIAL' then begin
-  log(logfile,'  Dialling mode');
-  dial;
- end else begin
-  log(logfile,'  Waiting for call');
-  wait;
- end;
+ r.ax:=$2B44;
+ r.bx:=$4D41;
+ r.cx:=$7063;
+ r.dx:=$4157;
+ intr($21,r);
+ pcloaded:=(r.ax=$4F4B) or (r.ax=$6F6B);
 
+ if pcloaded then log('! PcAnywhere loaded');
+
+ sitecrc:=0;
+ crc16(sitecrc,setup.site,5);
+ if sitecrc=6541 then log('! This is a demonstration version only');
+ if killdata     then log('! This is a limited demo version only');
+
+ route;
+
+ s:='';
+ boo:=initialise(s);
+
+ if paramcount=0 then dial else
+ for parm:=1 to paramcount do begin
+  s:=paramstr(parm);
+  s:=ucase(s);
+  if (length(s)>4) and (copy(s,1,4)='DIAL') then begin
+   delete(s,1,4);
+   val(s,currsession,ioerror);
+   if currsession>0 then dec(currsession);
+   s:='DIAL';
+  end;
+  if s='WAITONCE' then begin
+   setup.exitafter:=true;
+   s:='WAIT';
+  end;
+  if (length(s)=6) and (copy(s,1,2)='WW') then begin
+   val(copy(s,3,2),phour,ioerror);
+   if phour<24 then setup.waitstart:=phour;
+   val(copy(s,5,2),phour,ioerror);
+   if phour<24 then setup.waitfinish:=phour;
+  end else
+  if (length(s)=6) and (copy(s,1,2)='DW') then begin
+   val(copy(s,3,2),phour,ioerror);
+   if phour<24 then setup.dialstart:=phour;
+   val(copy(s,5,2),phour,ioerror);
+   if phour<24 then setup.dialfinish:=phour;
+  end else
+  if s='TERM' then terminal else
+  if s='DIAL' then dial else
+  if s='WAIT' then wait else begin
+   window(1,1,80,25);
+   textattr:=7;
+   clrscr;
+   if s<>'?' then log('? Unrecognised parameter: '+s);
+   writeln(#10'APNS Command-Line Usage Summary');
+   writeln(#10'APNS [DIAL] [DIAL#] [WAIT] [WAITONCE] [DWssff] [WWssff] [TERM]');
+   writeln(#10'Where # is the Dialling Session Number, ss is the time window start hour and');
+   writeln('ff is the time window finish hour.');
+   writeln(#10'The default Dialling Session Number is 1, so APNS or APNS DIAL are equivalent');
+   writeln('to APNS DIAL1');
+   writeln(#10'The WAITONCE command allows immediate use in answering mode.');
+   writeln(#10'The DWssff command controls the Dialling Window, and WWssff command controls');
+   writeln('the Answer Window.');
+   writeln(#10'The TERM command starts Terminal Mode');
+   halt;
+  end;
+ end;
 end. {APNS}

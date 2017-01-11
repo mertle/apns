@@ -4,28 +4,32 @@
 program APSCHED;
 
 uses
- crt,dos;
+ crt,dos,utility,random6,gesec;
+
+type
+ comport=record
+  base:word;
+  irq,int:byte;
+ end;
 
 {$I lastrev.inc}
-
-{$I english.inc}
-
 {$I apdefs.inc}
 
 const
  space=#32;
  cr=#13;
  lf=#10;
- esc=#27;                  {j, f, m, a, m, j, j, a, s, o, n, d}
+ esc=#27;                  {Ja,Fe,Ma,Ap,Ma,Ju,Ju,Au,Se,Oc,No,De}
  dim:array [1..12] of byte=(31,28,31,30,31,30,31,31,30,31,30,31);
  nod:array [0..6] of string[6]=('Sun','Mon','Tues','Wednes','Thurs','Fri','Satur');
  pass:string[20]='DOS';
+ debugstr:string[20]='SOD';
 
 var
  exitsave:pointer;
  s:string;
  logname:string[128];
- time,date:string[20];
+ time,date,edate:string[20];
  dir:dirstr;
  name:namestr;                   {fsplit of invoked name}
  ext:extstr;
@@ -36,53 +40,40 @@ var
  ioerror:integer;
  r:registers;
  daysofar:word;
+ debug:boolean;
+
+ keyboard:byte absolute $40:$17;
+ keybtemp:byte;
 
 {**************************************************************************}
 
-procedure beep;
+procedure encrconf;
+
+var
+ loop:word;
 
 begin
- if setup.sound then write(#7);
+ randseed:=18572;
+ for loop:=1 to sizeof(config) do security[loop]:=security[loop] xor random(256);
 end;
 
 {**************************************************************************}
 
-function stringof(c:char;l:byte):string;
-
-var
- s:string;
+procedure yesterday;
 
 begin
- s[0]:=chr(l);
- fillchar(s[1],l,c);
- stringof:=s;
-end;
-
-{**************************************************************************}
-
-function exist(s:string):boolean;
-
-var
- f:file;
-
-begin
- assign(f,s);
- reset(f);
- close(f);
- exist:=(ioresult=0);
-end;
-
-{**************************************************************************}
-
-function pad(n:word):string;
-
-var
- temp:string;
-
-begin
- str(n:2,temp);
- if temp[1]=' ' then temp[1]:='0';
- pad:=temp;
+ dec(dow);
+ if dow=65535 then dow:=6; {Sunday to Saturday}
+ dec(day);
+ if day=0 then begin
+  dec(month);
+  if month=0 then begin
+   month:=12;
+   dec(year);
+   if year mod 4=0 then dim[2]:=29 else dim[2]:=28;
+   day:=dim[month];
+  end;
+ end;
 end;
 
 {**************************************************************************}
@@ -95,42 +86,32 @@ var
 begin
  gettime(w1,w2,w3,w4);
  getdate(year,month,day,dow);
- if year mod 4=0 then inc(dim[2]); {Leap years}
- if w1<7 then begin
-  dec(dow);
-  if dow=65535 then dow:=6; {Sunday to Saturday}
-  dec(day);
-  if day=0 then begin
-   dec(month);
-   if month=0 then begin
-    month:=12;
-    dec(year);
-    if year mod 4=0 then dim[2]:=29 else dim[2]:=28;
-    day:=dim[month];
-   end;
-  end;
- end;
- time:=pad(w1)+':'+pad(w2)+':'+pad(w3);
- date:=pad(day)+'/'+pad(month)+'/'+pad(year mod 100);
+ if year mod 4=0 then dim[2]:=29; {Leap years}
+ if w1<7 then yesterday;
+ time:=itos(w1,2)+':'+itos(w2,2)+':'+itos(w3,2);
+ date:=itos(day,2)+'/'+itos(month,2)+'/'+itos(year mod 100,2);
 end;
 
 {**************************************************************************}
 
-procedure log(var f:text;s:string);
+procedure log(s:string);
 
 begin
- writeln(s);
- writeln(f,s);
+ maketd;
+ s:=time+' '+s;
+ if debug then writeln(s);
+ writeln(logfile,s);
 end;
 
 {**************************************************************************}
 
-{$F+}procedure exitroutine;{$F-}
+procedure exitroutine; far;
 
 var
  x,y:byte;
 
 begin
+ exitproc:=exitsave;
  x:=wherex;
  y:=wherey;
  window(1,1,80,25);
@@ -140,14 +121,27 @@ begin
  gotoxy(x,y);
  if erroraddr<>nil then begin
   str(exitcode,s);
-  log(logfile,'! Abnormal program termination. Please report error '+s);
+  log('! Please report '+s);
   writeln;
  end;
  maketd;
- log(logfile,'');
- log(logfile,'  APSCHED exitted at '+time+' on the '+date);
+ if debug then log('  APSCHED exited ('+date+')');
  close(logfile);
- exitproc:=exitsave;
+end;
+
+{**************************************************************************}
+
+function countrycode:byte;
+
+var
+ s:string;
+
+begin
+ r.ax:=$3800;
+ r.ds:=seg(s);
+ r.dx:=ofs(s);
+ msdos(r);
+ countrycode:=r.bx;
 end;
 
 {**************************************************************************}
@@ -155,18 +149,9 @@ end;
 procedure copyright;
 
 begin
- writeln(
-  cr+lf+' млллм      лллллллм   лл    лл     мллллллм'
- +cr+lf+'лллпллл     лл    лл   ллл   лл     ллп  плл                 The'
- +cr+lf+'лл   лл     лл    лл   лллл  лл     ллм         Aurora Polling Network System'
- +cr+lf+'лл   лл     лллллллп   ллпллмлл      пллллм');
-writeln('ллллллл     лл         лл  лллл          плл        Designed and Coded by'
- +cr+lf+'лл   лл     лл         лл   ллл     ллм  млл         Michael E. Ralphson'
- +cr+lf+'лл   лл  м  лл      м  лл    лл  м  пллллллп  м');
-writeln(cr+lf+'Automated Event Scheduler Module (APSCHED)');
-writeln(
-  cr+lf+'Version '+version+' (Last Revision '+lastrev+')',
-  cr+lf+'Copyright (c) 1991 Michael E. Ralphson, All Rights Reserved');
+ writeln;
+ writeln('APSCHED Version '+version+' (Last Revision '+lastrev+')');
+ writeln('Copyright (c) 1991,92 Michael E. Ralphson, All Rights Reserved');
 end;
 
 {**************************************************************************}
@@ -182,8 +167,9 @@ begin
  writeln;
  s:='';
  loop:=1;
+ while keypressed do c:=readkey;
  repeat
-  write('Clearing memory: ',loop*64:3,'Kb'#13);
+  write('Scanning memory for scheduler: ',loop*64:3,'Kb'#13);
   inner:=1;
   repeat
    delay(10);
@@ -201,13 +187,14 @@ begin
   end else begin
    inc(loop);
   end;
- until (loop>10) or (s=pass);
+ until (loop>10) or (pos(pass,s)>0) or (pos(debugstr,s)>0);
  writeln;
- if s=pass then begin
+ if pos(debugstr,s)>0 then debug:=true;
+ if pos(pass,s)>0 then begin
   textattr:=textattr or 128;
   writeln(#13#10'When you are finished in DOS you must REBOOT!');
   textattr:=7;
-  writeln(logfile,'* DOS accessed from ApSched');
+  if debug then writeln(logfile,'* DOS accessed from ApSched');
   erase(apdat);
   ioerror:=ioresult;
   assign(apbatch,dir+'APSCHED.BAT');
@@ -220,8 +207,18 @@ begin
   writeln(apbatch,'CD '+s);
   writeln(apbatch,'APSCHED0.EXE');
   close(apbatch);
+
+  keybtemp:=keyboard;
+  keybtemp:=keybtemp and 239;
+  inline($FA);
+  keyboard:=keybtemp;
+  inline($FB);
+
+  writeln;
+
   halt(0);
  end;
+ writeln;
 end;
 
 {**************************************************************************}
@@ -233,17 +230,27 @@ var
  loop:longint;
  event:schedentry;
  schedfile:file of schedentry;
+ configfile:file of config;
  doit:boolean;
  week:byte;
- adname:string;
+ adname,dossite:string;
 
 begin
+ debug:=false;
+ textattr:=7;
+ clrscr;
+
+ r.ah:=$B;
+ r.bx:=0;
+ intr($10,r);
+
+ checkbreak:=false;
 
  exitsave:=exitproc;
  exitproc:=@exitroutine;
 
- copyright;
-
+ if debug then copyright;
+ 
  s:=fexpand(paramstr(0));
  fsplit(s,dir,name,ext);
  logname:=dir+'APNS.LOG';
@@ -258,13 +265,10 @@ begin
  close(apdat);
  if ioresult<>0 then next2run:=0;
 
- writeln(#10'Entering the Schedule file at entry number ',next2run);
+ if debug then writeln(#10'Entering the Schedule file at entry number ',next2run);
 
  maketd;
- writeln(logfile);
- writeln(logfile,stringof('Э',79));
- writeln(logfile);
- writeln(logfile,'  APSCHED started at '+time+' on the '+date);
+ if debug then writeln(logfile,'  APSCHED started ('+date+')');
 
  daysofar:=0;
  for loop:=1 to pred(month) do inc(daysofar,dim[loop]);
@@ -272,21 +276,56 @@ begin
  week:=daysofar div 7;
  if (daysofar/7)>week then inc(week);
 
- writeln(#10'Today is ',nod[dow],'day the ',date,' (Day Number ',daysofar,', Week Number ',week,')');
+ if debug then writeln(#10'Today is ',nod[dow],'day the ',date,' (Day Number ',daysofar,', Week Number ',week,')');
 
- getsneaky;
+ if keyboard and 16=16 then getsneaky;
 
- writeln;
+ keybtemp:=keyboard;
+ keybtemp:=keybtemp and 239;
+ keyboard:=keybtemp;
+ 
+ s:=dir+'APNS.CFG';
+ assign(configfile,s);
+ reset(configfile);
+ ioerror:=ioresult;
+ if ioerror<>0 then begin
+  str(ioerror,s);
+  log('! Error '+s+' reading config file');
+  exit;
+ end;
+ read(configfile,setup);
+ close(configfile);
+ encrconf;
+
+ if ge2site<>'' then begin
+  dossite:=ucase(getenv('SITE'));
+  if (ge2site='TEST') and (dossite='TEST') then setup.site:='TEST';
+  if (ge2site<>setup.site) or (dossite<>setup.site) then begin
+   writeln;
+   writeln('Site Codes do not match.');
+   writeln;
+   writeln('APNS.CFG Site Code = ',setup.site);
+   writeln('SECURITY Site Code = ',ge2site);
+   writeln('AUTOEXEC Site Code = ',dossite);
+   writeln;
+   writeln('Please check that the Security Site Code, APNS Site Code and the SET SITE=');
+   writeln('line in AUTOEXEC.BAT all have the same Site Code');
+   writeln;
+   writeln('Press any key to continue...');
+   c:=readkey;
+   halt;
+  end;
+ end;
 
  s:=dir+'APNS.SCH';
  assign(schedfile,s);
  reset(schedfile);
 
- writeln;
+ if debug then writeln;
  ioerror:=ioresult;
  if ioerror<>0 then begin
   str(ioerror,s);
-  log(logfile,'! Error '+s+' reading schedule file');
+  log('! Error '+s+' reading schedule file');
   exit;
  end;
 
@@ -297,13 +336,12 @@ begin
    seek(schedfile,next2run);
    read(schedfile,event);
    maketd;
-   for loop:=1 to length(event.actdate) do
-    if event.actdate[loop]='?' then event.actdate[loop]:=date[loop];
+   edate:=event.actdate;
 
-   if copy(event.actdate,1,2)='99' then begin
-    if (day=dim[month]) or ((dow=6) and (day=pred(dim[month]))) then
-     move(date[1],event.actdate[1],2);
-   end;
+   for loop:=1 to length(edate) do
+    if edate[loop]='?' then edate[loop]:=date[loop];
+
+   if (edate='ENDMONTH') and (day=dim[month]) then edate:=date;
 
    doit:=false;
 
@@ -311,31 +349,39 @@ begin
 
    if event.okonday[dow] then doit:=true;
 
-   if not doit then log(logfile,'* Could not run '+event.comment+' on this day of the week');
+   if debug and (not doit) then log('* Could not run '+event.name+' on this day of the week');
 
    if event.weekno>0 then
     if event.weekno<>week then begin
      doit:=false;
-     log(logfile,'* Could not run '+event.comment+' on this week number');
+     if debug then log('* Could not run '+event.name+' on this week number');
     end;
 
-   if event.actdate<>'' then
-    if event.actdate<>date then begin
+   if edate<>'' then
+    if edate<>date then begin
      doit:=false;
-     log(logfile,'* Could not run '+event.comment+' on this date');
+     if debug then log('* Could not run '+event.name+' on this date');
     end;
 
-{   if event.lastrun=daysofar then begin
+   if (event.lastrun=daysofar) and (event.onceonly) then begin
     doit:=false;
-    log(logfile,'* '+event.comment+' has already been run today');
-   end;}
+    if debug then log('* '+event.name+' has already been run today');
+   end;
+
+   if (event.country in [30..50]) and (event.country<>countrycode) then begin
+    doit:=false;
+    if debug then log('* '+event.name+' is for another country only');
+   end;
 
    inc(next2run);
   until (next2run>=filesize(schedfile)) or (doit);
  end;
 
-
- {Update was here, see below}
+ if doit then begin
+  event.lastrun:=daysofar;
+  seek(schedfile,pred(next2run));     {Update lastrun counter for this event}
+  write(schedfile,event);             {Write any changes to the schedule file}
+ end;
 
  close(schedfile);
  assign(apbatch,dir+'APSCHED.BAT');
@@ -353,24 +399,27 @@ begin
   rewrite(apdat);
   write(apdat,next2run);
   close(apdat);
-  log(logfile,'');
-  log(logfile,'  '+date+' '+time+' : '+event.comment);
+  
+  {Perform commandline replacements}
+  
+  replace(event.command,'%DAY',copy(date,1,2),false);
+  replace(event.command,'%MONTH',copy(date,4,2),false);
+  replace(event.command,'%YEAR',copy(date,7,2),false);
+  replace(event.command,'%DATE',date,false);
+  
+  if next2run=1 then log('№ '+event.name+' ('+date+')')
+   else log('= '+event.name);
   writeln(apbatch,'CALL '+event.command);
   writeln(apbatch,'GOTO START');
   close(apbatch);
  end else begin
 
   writeln(apbatch,'REBOOT');
+  writeln(apbatch,'GOTO START');
   close(apbatch);
   erase(apdat);
   ioerror:=ioresult;
 
  end;
-
-end. {APNS}
-
- if doit then begin
-  event.lastrun:=daysofar;
-  seek(schedfile,pred(next2run));     {Update lastrun counter for this event}
-  write(schedfile,event);             {Write any changes to the schedule file}
- end;
+ 
+end. {APSCHED}

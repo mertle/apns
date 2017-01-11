@@ -1,93 +1,121 @@
 {$A+,B-,D-,E-,F-,G-,I-,L-,N-,O-,R-,S+,V-,X-}
-{$M 1024,0,655360}
+{$M 4096,0,65000}
 program install;
 
 uses dos,crt;
 
+type
+ comport=record
+  base:word;
+  irq:byte;
+  int:byte;
+ end;
+ filebuffer=array [1..64512] of byte;
+
+var
+ buf:^filebuffer;
+
 {$I lastrev.inc}
-
-{$I version.inc}
-
-{$I english.inc}
+{$I apdefs.inc}
 
 procedure centre(s:string);
 
 begin
  gotoxy(round((80-length(s))/2),wherey);
- writeln(s);
+ write(s);
 end;
 
 function ncopy(source,dest:string):boolean;
 
-type
- FileBuffer = array[1..65000] of byte;
-
 var
- InFile,
- OutFile : file;
- BlocksRead,
- BlocksWritten,
- BufSize : word;
- buf : ^FileBuffer;
+ infile,outfile:file;
+ blocksread,blockswritten:word;
 
 begin
-  BufSize := SizeOf(FileBuffer);
-  if BufSize > MaxAvail then
-    BufSize := MaxAvail;
-  GetMem(buf, BufSize);
-  Assign(InFile, Source);
-  Reset(Infile, 1);
-  Assign(OutFile, Dest);
-  Rewrite(OutFile, 1);
-  repeat
-    BlockRead(Infile, buf^, BufSize, BlocksRead);
-    BlockWrite(OutFile, buf^, BlocksRead, BlocksWritten);
-    if BlocksWritten < BlocksRead then begin
-        writeln(_disk_full);
-        blocksRead:=0;
-       end;
-  until (BlocksRead < BufSize);
-  FreeMem(buf, BufSize);
-  Close(InFile);
-  Close(OutFile);
-  ncopy:=true;
+ ncopy:=false;
+ assign(infile,source);
+ reset(infile,1);
+ assign(outfile,dest);
+ rewrite(outfile,1);
+ if ioresult<>0 then exit;
+ repeat
+  blockread(infile,buf^,64512,blocksread);
+  blockwrite(outfile,buf^,blocksread,blockswritten);
+  if blockswritten<blocksread then begin
+   writeln(' Disk Full');
+   blocksread:=0;
+  end;
+ until (blocksread<64512);
+ close(infile);
+ close(outfile);
+ ncopy:=true;
 end;
 
 var
  start,temp:string;
  make,change:word;
  f:searchrec;
- loop:byte;
+ x,y,loop:byte;
+ drive,c:char;
+ configdone:boolean;
 
 begin
- directvideo:=false;
+ drive:='C';
+ c:='N';
+ directvideo:=true;
+ checksnow:=false;
+ checkbreak:=false;
  clrscr;
  writeln;
- centre(_ins_title);
- writeln;
- centre('V'+version+' ('+lastrev+'), Copyright (c) 1991 Michael E. Ralphson');
- writeln;
+ centre('Automated Polling Network System (APNS) Installation');
+ writeln(#10);
+ centre('Version '+version+', Copyright (c) 1993 Michael E. Ralphson');
+ writeln(#10);
  getdir(0,start);
 
+ if maxavail>=64512 then getmem(buf,64512) else begin
+  centre('Not enough memory to install APNS');
+  writeln(#7);
+  exit;
+ end;
+
+ if paramcount>0 then begin
+  temp:=paramstr(1);
+  drive:=upcase(temp[1]);
+ end;
  writeln;
- centre(_ins_mesg1+start+_ins_mesg2); {Installing from, to}
- writeln;
+ 
+ if start<>drive+':\APNS' then begin
+  centre('Installing from '+start+' to '+drive+':\APNS'); 
+  writeln(#10);
+  centre('Is this correct (Y/N) ?');
+  repeat
+   c:=upcase(readkey);
+  until (c='Y') or (c='N');
+ end else centre('Source and destination paths are the same.');
+ writeln(#10);
+ if c='N' then begin
+  centre('Restart the program with the correct drive letter, eg: INSTALL F:');
+  writeln;
+  exit;
+ end;
  change:=0;
- mkdir('C:\APNS');
+ mkdir(drive+':\APNS');
  make:=ioresult+doserror;
- mkdir('C:\APNS\SEND');
+ mkdir(drive+':\APNS\SEND');
  make:=ioresult+doserror;
- mkdir('C:\APNS\RECV');
+ mkdir(drive+':\APNS\RECV');
  make:=ioresult+doserror;
  doserror:=0;
- chdir('C:\APNS\RECV');
+ chdir(drive+':\APNS\RECV');
  inc(change,ioresult+doserror);
- chdir('C:\APNS\SEND');
+ chdir(drive+':\APNS\SEND');
  inc(change,ioresult+doserror);
- chdir('C:\APNS');
+ chdir(drive+':\APNS');
  inc(change,ioresult+doserror);
  if change<>0 then begin
-  centre(_ins_nocreate);
+  centre('Could not create directories');
+  writeln;
   chdir(start);
   exit;
  end;
@@ -95,14 +123,45 @@ begin
 
  findfirst('*.*',0,f);
  while doserror=0 do begin
-  temp:='';
-  for loop:=1 to length(f.name) do temp:=temp+upcase(f.name[loop]);
-  if temp<>'INSTALL.EXE' then begin
-   write(' '+temp);
-   if ncopy(temp,'C:\APNS\'+temp) then write(#13'             '#13)
-   else writeln(_ins_copyfail);
+  temp:=f.name;
+  if (temp<>'INSTALL.EXE') and (pos('.CFG',temp)=0) then begin
+   gotoxy(27,wherey);
+   write('Installing: ',temp:12);
+   if not ncopy(temp,drive+':\APNS\'+temp) then writeln(#7' Could not be copied');
   end;
   findnext(f);
  end;
- centre(_ins_complete);
+ 
+ configdone:=false;
+ findfirst('*.CFG',0,f);
+ while doserror=0 do begin
+  if not configdone then begin
+   temp:=f.name;
+   gotoxy(27,wherey);
+   if length(temp)>8 then begin
+    write('Install ',temp:12,' (Y/n)');
+    c:=upcase(readkey);
+   end else begin
+    write('Installing: ',temp:12);
+    c:='Y';
+   end; 
+   if c<>'N' then begin
+    if not ncopy(temp,drive+':\APNS\APNS.CFG') then begin
+     writeln(#7' Could not be copied');
+    end else configdone:=true;
+   end; 
+  end;
+  findnext(f);
+ end;
+ 
+ write(#13);
+ clreol;
+ writeln;
+ chdir(drive+':\APNS');
+ exec(getenv('COMSPEC'),'/C APCONFIG.EXE SETDIR');
+ writeln;
+ centre('Installation complete');
+ writeln(#10);
+ centre('Type APNS WAIT or APNS DIAL to start');
+ writeln;
 end.

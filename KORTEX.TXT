@@ -1,5 +1,0 @@
-com 3 Kortex = 370h IRQ 3 (Int C)
-com 4 Kortex = 270h IRQ 3 (Int C)
-
-com 3 Nokia  = 3E8h IRQ 5 (Int D)
-com 4 Nokia  = 3E8h IRQ 2 (Int A)

@@ -1,4 +1,4 @@
-procedure crc16(var checksum:byte;var CRC:word;b:byte);
+procedure crc16(var crc:word;var x;size:word);
 
 {NB: polynomial=x^16+x^12+x^5+1}
 
@@ -28,7 +28,16 @@ const
   $EF1F,$FF3E,$CF5D,$DF7C,$AF9B,$BFBA,$8FD9,$9FF8,$6E17,$7E36,$4E55,$5E74,
   $2E93,$3EB2,$0ED1,$1EF0);
 
+type
+ crcbuf=array [1..1024] of byte;
+ crcptr=^crcbuf;
+
+var
+ p:crcptr;
+ loop:word;
+
 begin
- inc(checksum,b);
- crc:=crc_table[hi(crc) xor b] xor (lo(crc) shl 8);
+ p:=@x;
+ for loop:=1 to size do
+  crc:=crc_table[hi(crc) xor p^[loop]] xor (lo(crc) shl 8);
 end;

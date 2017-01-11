@@ -1,0 +1,11 @@
+Automated Polling Network System (APNS) Installation
+Il n''ya pas de memoire require pour install‚ APNS
+Installe de '+start+' …
+Est que ce correcte (O/N) ?
+Le repertoires origine et destination et le mˆme chose
+Activ‚ le program encore avec le lettre du disc correcte, eg: INSTALL F:
+Une erreur pendant me cr‚er les repertoires
+Install‚:
+Erreur du copier
+Installation complˆt
+Tapez APNS DIAL ou APNS WAIT pour commencer

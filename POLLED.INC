@@ -1,123 +1,123 @@
+{This version and all that are comms-compatible with v2.15 must accept
+ both IBM-packed and Unix format dates. The next non-comms-compatible
+ version will use Unix-style dates only}
+
 function polled:result;
 
 var
- response:byte;
- loop,outer:word;
- p:dptr;
+ loop,outer,times:word;
+ s:string;
+ bytestran:longint;
+ dt:datetime;
+ nextfile:searchrec;
  handshake,mine:hspacket;
  transfer:txpacket;
  proceed:boolean;
- times:word;
- nextfile:searchrec;
- s:string;
- bytestran:longint;
+ response:byte;
 
 begin
 
 {Initialise what variables we can, not knowing who the caller is yet}
 
  polled:=fail;
- log(logfile,'');
- log(logfile,_Session_Beginning+time+_On_The+date);
+ log('');
 
+ fillchar(mine,sizeof(mine),0);
  mine.sender:=setup.site;
- mine.files:=0;
- with mine do begin
-  gettime(hour,min,sec,hun);
-  getdate(year,month,day,loop);
-  timevalid:=true;
- end;
- mine.nopickup:=false;
- mine.vercode:=0;
+ 
+{Be prepared to wait absolutely yonks for STANDBY from the caller}
 
-{Delay to bypass MNP train}
-
- writeln;
- for loop:=1 to setup.mnptime*100 do begin
-  delay(10);
-  write(#13,_Delay,loop/100:1:2);
-  while charwaiting do response:=getaux;
- end;
- writeln(#10);
-
-{Wait for Caller's ENQ and send a SYN in return}
-
- times:=0;
- response:=0;
+ win(3);
+ writeln('Waiting for APNS caller to commence communications... ');
+ loop:=1;
+ laststr:='';
  repeat
-  response:=auxtb(1000);
-  if response=ENQ then sendaux(SYN);
-  inc(times);
-  write('.');
+  job:='Listening   ';
   status;
- until (response=ENQ) or (times=10) or (not carrierdetect);
- writeln;
- if response<>ENQ then begin
-  log(logfile,_No_Handshake);
-  hangup(false);
+  delay(100);
+  while charwaiting do receive;
+  inc(loop);
+  proceed:=pos('STANDBY',laststr)>0;
+ until (proceed) or (loop=1200) or escpressed;
+ if wherex>1 then writeln;
+ 
+ if not proceed then begin
+  log('! Initial APNS handshake failed');
+  hangup;
   exit;
  end;
- log(logfile,_Got_Handshake);
-
+ auxwrite('READY');
+ log('  Handshake initiated'); 
+ 
 {Get sender's identity and number of files}
 
- p:=addr(handshake);
  times:=0;
  repeat
-  proceed:=recvbytes(p,sizeof(handshake));
+  proceed:=recvbytes(handshake,sizeof(handshake));
   if not proceed then sendaux(AP_NAK);
   inc(times);
   status;
- until proceed or (times=10) or (not carrierdetect);
+ until proceed or (times=10) or escpressed;
  if not proceed then begin
-  log(logfile,_No_Identity_In);
-  hangup(false);
+  log('! Inbound identity transfer failed');
+  hangup;
   exit;
  end;
  sendaux(AP_ACK);
  str(handshake.files,s);
- log(logfile,_Connected_With+handshake.sender+_Who_Has+S+_Files_To_Send);
+ log('  Connected to '+handshake.sender+' who has '+s+' files to send');
+ 
+ poller:=handshake.sender;
 
- if (handshake.sender=setup.site) or (handshake.receiver<>setup.site) then begin
-  log(logfile,_security_violation);
-  hangup(false);
+ if (handshake.sender=setup.site) or (handshake.receiver<>setup.site) or
+    (handshake.password<>setup.password) then begin
+  log('! Security violation');
+  hangup;
   exit;
  end;
-
+ 
  polled:=partial;
-
+ if handshake.unixvalid then unix2dos(handshake.unixtime+(setup.gmtdiff*60),dt)
+  else unpacktime(handshake.ldate,dt);
+ if ((handshake.unixvalid) or (handshake.timevalid)) and
+    (not setup.blockrtc) then begin
+  setdate(dt.year,dt.month,dt.day);
+  settime(dt.hour,dt.min,dt.sec,99);
+ end;
+ 
 {Receive sender's files}
 
- p:=addr(transfer);
  for outer:=1 to handshake.files do begin
   times:=0;
   repeat
    status;
-   proceed:=recvbytes(p,sizeof(transfer));
+   proceed:=recvbytes(transfer,sizeof(transfer));
    if not proceed then sendaux(AP_NAK);
    inc(times);
-  until proceed or (times=10) or (not carrierdetect);
+  until proceed or (times=10) or escpressed;
   if not proceed then begin
-   log(logfile,_No_Fileinfo_In);
-   hangup(false);
+   log('! Inbound file info transfer failed');
+   hangup;
    exit;
   end;
   sendaux(AP_ACK);
   bytestran:=transfer.size;
-  purge;
-  if not(x_download(setup.downdir+'\'+transfer.name,bytestran))
-     or (bytestran<transfer.size) then begin
-   log(logfile,_Download_Of+transfer.name+_Failed);
-   hangup(false);
+  if not(a_download(setup.downdir+'\'+transfer.name,bytestran)) then begin
+   log('! Download of '+transfer.name+' failed');
+   hangup;
    exit;
   end;
   str(transfer.size,s);
-  log(logfile,_Incoming+transfer.name+' '+s+_Bytes+thruput);
+  log('  Inbound : '+transfer.name+' '+s+' bytes. '+thruput);
+  setfiletime(xferfile,transfer.time);
  end;
 
  polled:=oneway;
 
 {Now we can scan for files to send to the caller}
+
+ job:='Find Files  ';
+ status;
 
  mine.receiver:=handshake.sender;
 
@@ -130,50 +130,32 @@ begin
 
  if handshake.nopickup then begin
   mine.files:=0;
-  log(logfile,'  Caller requested that no files be sent');
+  log('  Caller requested that no files be sent');
  end;
-
-{Send ENQ characters until SYN is received}
-
- times:=0;
- response:=0;
- repeat
-  sendaux(ENQ);
-  response:=auxtb(1000);
-  inc(times);
-  write('.');
-  status;
- until (response=SYN) or (times=10) or (not carrierdetect);
- writeln;
- if response<>SYN then begin
-  log(logfile,_No_Retrain);
-  hangup(false);
-  exit;
- end;
- log(logfile,_Got_Retrain);
-
+ 
 {Send this information to the caller}
+{Note that Mine.UnixValid & Mine.TimeValid are false currently. For future use} 
 
- p:=addr(mine);
  times:=0;
  repeat
-  purge;
-  sendbytes(p,sizeof(mine));
+  gettime(dt.hour,dt.min,dt.sec,loop);
+  getdate(dt.year,dt.month,dt.day,loop);
+  mine.unixtime:=dos2unix(dt);
+  sendbytes(mine,sizeof(mine));
   proceed:=(auxtb(2000)=AP_ACK);
   inc(times);
   status;
- until proceed or (times=10) or (not carrierdetect);
+ until proceed or (times=10) or escpressed;
  if not proceed then begin
-  log(logfile,_No_Identity_Out);
-  hangup(false);
+  log('! Outbound identity transfer failed');
+  hangup;
   exit;
  end;
  str(mine.files,s);
- log(logfile,_We_Have+S+_Files_To_Send);
+ log('  We have '+s+' files to send');
 
 {Now send each of the files to the caller, if he's still there}
 
- p:=addr(transfer);
  findfirst(setup.updir+'\*.*',0,nextfile);
  for outer:=1 to mine.files do begin
   while (pos('-ALL',nextfile.name)<>5) and
@@ -181,30 +163,27 @@ begin
   transfer:=nextfile;
   times:=0;
   repeat
-   purge;
-   sendbytes(p,sizeof(transfer));
+   sendbytes(transfer,sizeof(transfer));
    proceed:=auxtb(2000)=AP_ACK;
    inc(times);
    status;
-  until proceed or (times=10) or (not carrierdetect);
+  until proceed or (times=10) or escpressed;
   if not proceed then begin
-   log(logfile,_No_Fileinfo_Out);
-   hangup(false);
+   log('! Outbound file info transfer failed');
+   hangup;
    exit;
   end;
-  purge;
-  if not(x_upload(setup.updir+'\'+transfer.name,1024,bytestran))
-     or (bytestran<transfer.size) then begin
-   log(logfile,_Upload_Of+transfer.name+_Failed);
-   hangup(false);
+  if not(a_upload(setup.updir+'\'+transfer.name)) then begin
+   log('! Upload of '+transfer.name+' failed');
+   hangup;
    exit;
   end;
   str(transfer.size,s);
-  log(logfile,_Outgoing+transfer.name+' '+s+_Bytes+thruput);
+  log('  Outbound: '+transfer.name+' '+s+' bytes. '+thruput);
   findnext(nextfile);
  end;
 
- log(logfile,_Successful_Session);
+ log('  Successful session');
  polled:=success;
- hangup(false);
+ hangup;
 end;

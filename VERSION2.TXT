@@ -1,0 +1,143 @@
+
+                    Specification For The Operation Of APNS 
+
+                  Draft 1 , 27th June 1991     (Version 1.10)
+                  Draft 2 , 26th June 1992     (Version 2.02)
+                  Draft 2a, 10th November 1992 (Version 2.15) 
+
+Definitions:
+
+1) SITE a shop, franchise or office using a copy of APNS [Waiting]
+2) OFFICE a shop, franchise or office using a copy of APNS [Polling]
+
+Reason for new specification:
+
+The current method of file-identification (that of using the file
+extension as the origin / destination site number) is not sufficient
+for the full system envisaged, in which sites may be polled by several
+different offices, and files transmitted through the system from any
+site to any other site.
+
+New Specification:
+
+Files will be named according to the following convention;
+
+<ORIG><DEST>.<TYP>
+
+Thus all files in send and receive directories will have an eight
+character filename and a three character extension. Under the new
+specification all transmitted files should be archived with the LHA
+utility version 2.13 or above (as this generates smaller files and is
+generally faster than version 1.13c used previously).
+
+| APNS version 2.10 and higher depends on LHA version 2, as it
+| directly modifies .LZH files when it processes routed files in
+| the \APNS\RECV directory. 
+|
+| The APFILE utility also calls LHA directly from the program.
+
+The ORIGin and DESTination are both examples of the SITE CODE. The
+Site Code is a four character unique identifier that forms the
+backbone of the new specification.
+
+The Site Code is actually a 4 digit base 36 number. Base 36 is a
+numbering system like hexadecimal but uses the range 0 to 9 and A to Z
+(ie basically the same range of characters permitted in MSDOS file
+names).
+
+With four digits the largest number we can store is 1,679,615. Coding
+the site's number within region, region number within country and
+country code, we can generate unique codes for the system based on 255
+possible sites per region, 127 regions per country and a total of 48
+countries.
+
+This coding utilises 95% of the possible values (0000 to YEWV), thus
+leaving all codes Z000 to ZZZZ for internal system use and further
+expansion.
+
+| Currently the system uses site codes generated ad-hoc, and that do
+| not conform to the above structure. This is because no regional
+| structure exists in the shop sites that is a usable basis for
+| the system.
+
+| For example, Rueil has a site code of 0070 which is in fact the internal
+| Midas site designation. French head ofice has been given the site code
+| 0001 for obvious reasons, and it is intended to follow on with using
+| the GE2 country codes so the UK head office (Garage Expert) will be site
+| 0002, Spain 0003, Austria 0004, and Belgium 0005.
+
+| The best compromise is to use the country code as the first digit of
+| the site code. So that Midas France is 1000, Rueil is 1070, MicroFor
+| is site 2000, Midas Belgium is 5000, Belgielei is 5001 etc.
+
+The TYPe of the file is a three letter code signifying the contents of
+the file. The first two characters should be unique as the third may
+be used to 'stack' incoming files with the same name (eg if an
+incoming file 1FBC1FA4.STK already exists in the receiver's RECV
+directory, the file name will be changed to 1FBC1FA4.ST0, .ST1 etc).
+
+Proposed file types are STK (stock updates), SAL (sales information),
+PUR (purchase information), EML (electronic mail).
+
+Obviously these will be used by Garage Expert and are not processed by
+Apns at all. Three internal file types reserved by Apns are TRN (for
+files in transit), INT for internationally routed files and NUP (for
+nodelist updates, see below).
+
+| Only the .TRN extension is currently used, to indicate any routed
+| data packets.
+
+Obviously site codes are not easily readable. The Apns system will be
+supplemented with an Address utility which is used for creating and
+inspecting site codes.
+
+If Garage Expert wants a sales report sending to the regional office,
+the program should call the Address utility as follows;
+
+ADDRESS <source file> [<receiver> <file type>] [<encryption key>]
+
+Eg: ADDRESS 17691sal.rep grenoble SAL
+
+The Address utility will calculate the receiver's site code and call
+LHA to create a packed file in the SEND directory, the file
+extension will be as specified by Garage Expert (ie SAL for sales
+report).
+
+If the destination is a site other than the regional office then the
+Address utility will create a new LHA'ed file addressed to the
+regional office. This file will contain the file intended for the
+eventual destination site, but will have the extension .TRN, to
+indicate to the receiver that it is in transit.
+
+| The above process is now handled by APFILE. The ADDRESS program
+| was never actually written.
+
+At the regional site the transit file is unpacked so the eventual
+destination can be ascertained. If the destination is a site in the
+current region, the file is moved into the SEND directory, otherwise
+it is forwarded to the head office in a similar manner to the above.
+
+| APNS.EXE has internal routines to perform routing in this manner.
+
+If an encryption key is specified, then the file is encrypted (in the
+same manner as the standalone ENCRYPT program), LHA itself does not
+have its own encryption system. This feature is for sensitive files
+routed through the network.
+
+The other syntax of Address will be: ADDRESS <source file>
+
+This will produce a display similar to the following;
+
+File 1FBC1FA4.SAL is from Annemasse, France. 2:3/200
+                     to   Grenoble, France. 2:3/156
+
+In both of its functions, the Address utility looks up the textual
+name of a site (Annemasse, Reuil, Grenoble etc) in the NODELIST.
+
+The Nodelist is a list of all sites on the network. For size reasons
+the nodelist at each site will only deal with one country.
+International routing of files is accomplished by the head-offices
+only.
+
+The Nodelist contains the Site Code, site name, and telephone number
+of each site.
