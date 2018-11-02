@@ -2,7 +2,7 @@
 {$M 16384,0,0}
 
 uses
- test186,crt,dos,utility,data,random6;
+ crt,dos,utility,data;
 
 const
  last:longint=0;
@@ -436,7 +436,7 @@ begin
      end;
     end;
     if first=oldfirst then c:=' ';
-   end; 
+   end;
    if c=#0 then case readkey of
     #72:begin
          dec(default);
@@ -651,7 +651,7 @@ begin
     log('+ Modem '+currmodem.name+' deleted');
    end;
   end;
- until picked<0; 
+ until picked<0;
 end;
 
 {**************************************************************************}
@@ -740,7 +740,7 @@ begin
    close(f);
    reset(modemfile);
   end;
- end; 
+ end;
 end;
 
 {**************************************************************************}
@@ -1251,7 +1251,7 @@ begin
     log('+ Site '+currsite.name+' deleted');
    end;
   end;
- until picked<0; 
+ until picked<0;
 end;
 
 {**************************************************************************}
@@ -1319,7 +1319,7 @@ begin
        repeat
         picked:=picklist('Edit',picked);
         if picked>=0 then editsite('Edit Node',picked);
-       until picked<0; 
+       until picked<0;
       end else winmsg('Error','There are no entries in the node-list');
     3:if last>0 then deletesite(s) else winmsg('Error','There are no entries in the node-list');
     4:begin
@@ -1410,7 +1410,7 @@ begin
     log('+ Event '+currevent.name+' deleted');
    end;
   end;
- until picked<0; 
+ until picked<0;
 end;
 
 {**************************************************************************}
@@ -1523,7 +1523,7 @@ begin
         picked:=picklist('Edit',picked);
         menuname:=omname+' \ SCHEDULER';
         if picked>=0 then editevent('Edit Event',picked);
-       until picked<0; 
+       until picked<0;
       end else winmsg('Error','There are no events to edit');
     3:if last>0 then delevent(s) else winmsg('Error','There are no events to delete');
     4:sortsched;
@@ -1538,7 +1538,7 @@ begin
         rewrite(f);
         write(f,picked);
         winmsg('Scheduler','Run APSCHED.BAT to begin');
-       end; 
+       end;
        close(f);
        status;
       end;
@@ -1677,5 +1677,5 @@ begin
  setup.sound:=utilbeep;
  if setup.crc<>firstcrc then log('+ Configuration modified');
  writesetup;
- 
+
 end. {APCONFIG}

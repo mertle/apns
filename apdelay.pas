@@ -5,7 +5,7 @@ program apdelay;
 {Program for the shop system to wait and allow PC-Anywhere support calls
  before going into APNS WAIT at the specified time}
 
-uses crt,dos,random6;
+uses crt,dos;
 
 type
  comport=record
@@ -13,7 +13,7 @@ type
   IRQ:byte;
   int:byte;
  end;
- 
+
  waitstyle=(for_begin,for_end);
 
 {$I apdefs.inc}
@@ -25,11 +25,11 @@ var
  dir:dirstr;
  name:namestr;
  ext:extstr;
- r:registers;
+ {r:registers;}
  loop,error:byte;
  nextevent:longint;
  waitmode:waitstyle;
- 
+
 {**************************************************************************}
 
 procedure encrconf;
@@ -41,7 +41,7 @@ begin
  randseed:=18572;
  for loop:=1 to sizeof(config) do security[loop]:=security[loop] xor random(256);
 end;
- 
+
 {*************************************************************************}
 
 function itos(i:word;n:byte):string;
@@ -55,7 +55,7 @@ begin
  for loop:=1 to length(temp) do if temp[loop]=' ' then temp[loop]:='0';
  itos:=temp;
 end;
- 
+
 {*************************************************************************}
 
 function time:string;
@@ -67,10 +67,10 @@ var
 begin
  gettime(hour,min,sec,hun);
  time:=itos(hour,2)+':'+itos(min,2)+':'+itos(sec,2);
-end; 
- 
-{*************************************************************************} 
- 
+end;
+
+{*************************************************************************}
+
 procedure log(s:string);
 
 var
@@ -82,7 +82,7 @@ begin
  if ioresult<>0 then rewrite(logfile);
  writeln(logfile,time+' '+s);
  close(logfile);
-end; 
+end;
 
 {*************************************************************************}
 
@@ -97,9 +97,9 @@ var
 
 begin
  error:=0;
- r.ah:=1;
+ {r.ah:=1;
  r.cx:=$2020;
- intr($10,r);
+ intr($10,r);}
  password:='';
  chour:=setup.waitfinish;
  if chour<setup.waitstart then inc(chour,24);
@@ -147,13 +147,13 @@ begin
    if hour>0 then dec(hour)
    else hour:=23;
    testfor:=(hour=setup.waitfinish);
-  end; 
+  end;
 
  until (testfor) or (getout) or (secret);
- 
- r.ah:=1;
+
+ {r.ah:=1;
  r.cx:=$0607;
- intr($10,r);
+ intr($10,r);}
  clrscr;
  if getout then begin
   error:=255;
@@ -184,10 +184,10 @@ begin
  reset(setupfile);
  read(setupfile,setup);
  close(setupfile);
- if ioresult<>0 then exit;
- 
+ {if ioresult<>0 then exit;}
+
  encrconf;
- 
+
  s:=homepath+'APSCHED.DAT';
  assign(apdat,s);
  reset(apdat);
@@ -200,6 +200,7 @@ begin
   write(apdat,nextevent);
   close(apdat);
  end;
+ writeln('Poo');
  repeat
   chdir(homedir);
   if ioresult<>0 then;

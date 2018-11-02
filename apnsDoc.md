@@ -1,11 +1,11 @@
 
 
-                       ÚÄÄÄÄÄÄ· ÚÄÄÄÄÄ· ÚÄÄÄÄ·ÚÄ· ÚÄÄÄÄÄ·
-                       ³ ÖÄÄ¿ º ³ ÖÄ¿ º ³ Ö¿ º³ º ³ ÖÄÄÄ½
-                       ³ ÓÄÄÙ º ³ ÓÄÙ º ³ º³ º³ º ³ ÓÄÄÄ·
-                       ³ ÖÄÄ¿ º ³ ÖÄÄÄ½ ³ º³ º³ º ÀÄÄÄ¿ º
-                       ³ º  ³ º ³ º     ³ º³ ÓÙ º ÚÄÄÄÙ º
-                       ÀÄ½  ÀÄ½ ÀÄ½     ÀÄ½ÀÄÄÄÄ½ ÀÄÄÄÄÄ½
+                       â”Œâ”€â”€â”€â”€â”€â”€â•– â”Œâ”€â”€â”€â”€â”€â•– â”Œâ”€â”€â”€â”€â•–â”Œâ”€â•– â”Œâ”€â”€â”€â”€â”€â•–
+                       â”‚ â•“â”€â”€â” â•‘ â”‚ â•“â”€â” â•‘ â”‚ â•“â” â•‘â”‚ â•‘ â”‚ â•“â”€â”€â”€â•œ
+                       â”‚ â•™â”€â”€â”˜ â•‘ â”‚ â•™â”€â”˜ â•‘ â”‚ â•‘â”‚ â•‘â”‚ â•‘ â”‚ â•™â”€â”€â”€â•–
+                       â”‚ â•“â”€â”€â” â•‘ â”‚ â•“â”€â”€â”€â•œ â”‚ â•‘â”‚ â•‘â”‚ â•‘ â””â”€â”€â”€â” â•‘
+                       â”‚ â•‘  â”‚ â•‘ â”‚ â•‘     â”‚ â•‘â”‚ â•™â”˜ â•‘ â”Œâ”€â”€â”€â”˜ â•‘
+                       â””â”€â•œ  â””â”€â•œ â””â”€â•œ     â””â”€â•œâ””â”€â”€â”€â”€â•œ â””â”€â”€â”€â”€â”€â•œ
 
 
                         Automated Polling Network System
@@ -28,7 +28,7 @@
 
 
                                   Introduction
-                                  ÄÄÄÄÄÄÄÄÄÄÄÄ
+                                  â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   The Automated Polling Network System (APNS) is a fully integrated system
   for the automated collection of data from, and transmission of data to, a
@@ -40,7 +40,7 @@
 
 
                              Hardware Requirements
-                             ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+                             â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   The system software requires the following platform:
 
@@ -68,7 +68,7 @@
 
 
                                     Overview
-                                    ÄÄÄÄÄÄÄÄ
+                                    â”€â”€â”€â”€â”€â”€â”€â”€
 
   The APNS system comprises of one main executable program (APNS.EXE) and
   the configuration program (APCONFIG.EXE). User file management is
@@ -91,7 +91,7 @@
 
 
                                   Installation
-                                  ÄÄÄÄÄÄÄÄÄÄÄÄ
+                                  â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   The installation process has been kept extremely simple and can be carried
   out before the computer system is installed at the remote location, or via
@@ -136,7 +136,7 @@
     
 
                  Use of ApConfig for Initial Configuration
-                 ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+                 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   On installation, the Install program automatically changes directory to
   the drive where APNS was installed and runs the ApConfig program.
@@ -145,59 +145,59 @@
   remotely with software such as PcAnywhere IV.
 
 
- ÖÄ´ Main Menu ÃÄ·   This is the ApConfig Main Menu.
- º               º
- º°Configuration°º . For configuration sub-menu
- º Node List     º . To manipulate nodes in the nodelist
- º Scheduler     º . To manipulate the schedule file
- º Modem List    º . To maintain the APNS modem list
- º Com-Ports     º . Used to check the modem installation
- º               º
- ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
+ â•“â”€â”¤ Main Menu â”œâ”€â•–   This is the ApConfig Main Menu.
+ â•‘               â•‘
+ â•‘â–‘Configurationâ–‘â•‘ . For configuration sub-menu
+ â•‘ Node List     â•‘ . To manipulate nodes in the nodelist
+ â•‘ Scheduler     â•‘ . To manipulate the schedule file
+ â•‘ Modem List    â•‘ . To maintain the APNS modem list
+ â•‘ Com-Ports     â•‘ . Used to check the modem installation
+ â•‘               â•‘
+ â•™â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â•œ
 
  The user should then select 'Configuration' from this menu.
 
- ÖÄÄÄÄÄÄÄÄ´ Setup ÃÄÄÄÄÄÄÄÄ·   This is the ApConfig configuration menu
- º                         º
- º Screen and colour       º . Define on-screen colours and other options
- º Filenames and paths     º . Define location of send and receive dirs.
- º APNS control settings   º . Control the way APNS operates
- º Modem settings          º . Select / modify your modem type
- º Communications settings º . Tell APNS about your COM port, speed etc
- º Undo all changes        º . Otherwise they are automatically saved
- º                         º
- ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
+ â•“â”€â”€â”€â”€â”€â”€â”€â”€â”¤ Setup â”œâ”€â”€â”€â”€â”€â”€â”€â”€â•–   This is the ApConfig configuration menu
+ â•‘                         â•‘
+ â•‘ Screen and colour       â•‘ . Define on-screen colours and other options
+ â•‘ Filenames and paths     â•‘ . Define location of send and receive dirs.
+ â•‘ APNS control settings   â•‘ . Control the way APNS operates
+ â•‘ Modem settings          â•‘ . Select / modify your modem type
+ â•‘ Communications settings â•‘ . Tell APNS about your COM port, speed etc
+ â•‘ Undo all changes        â•‘ . Otherwise they are automatically saved
+ â•‘                         â•‘
+ â•™â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â•œ
 
  If the user wishes to modify any of ApConfig or APNS's colours then he or
  she should select 'Screen and colour' from this menu.
 
- ÖÄÄÄÄ´ Screen and Colour ÃÄÄÄÄ·    Most options are self explanatory
- º                             º
- º Main foreground colour      º
- º Main background colour      º
- º Window foreground colour    º
- º Window background colour    º
- º Highlight foreground colour º
- º Highlight background colour º
- º Window border style         º
- º Sound On                    º .  If sound is Off APNS will be silent
- º Direct screen writes On     º .  You should normally leave this ON
- º Snow checking Off           º .  Turn this ON if your machine has 'snow'
- º                             º
- ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
+ â•“â”€â”€â”€â”€â”¤ Screen and Colour â”œâ”€â”€â”€â”€â•–    Most options are self explanatory
+ â•‘                             â•‘
+ â•‘ Main foreground colour      â•‘
+ â•‘ Main background colour      â•‘
+ â•‘ Window foreground colour    â•‘
+ â•‘ Window background colour    â•‘
+ â•‘ Highlight foreground colour â•‘
+ â•‘ Highlight background colour â•‘
+ â•‘ Window border style         â•‘
+ â•‘ Sound On                    â•‘ .  If sound is Off APNS will be silent
+ â•‘ Direct screen writes On     â•‘ .  You should normally leave this ON
+ â•‘ Snow checking Off           â•‘ .  Turn this ON if your machine has 'snow'
+ â•‘                             â•‘
+ â•™â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â•œ
 
  To return to the Setup Menu when finished, press Escape.
 
- ÖÄÄÄÄÄÄÄÄ´ Setup ÃÄÄÄÄÄÄÄÄ·
- º                         º
- º Screen and colour       º
- º°Filenames°and°paths°°°°°º . Define location of send and receive dirs.
- º APNS control settings   º
- º Modem settings          º
- º Communications settings º
- º Undo all changes        º
- º                         º
- ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
+ â•“â”€â”€â”€â”€â”€â”€â”€â”€â”¤ Setup â”œâ”€â”€â”€â”€â”€â”€â”€â”€â•–
+ â•‘                         â•‘
+ â•‘ Screen and colour       â•‘
+ â•‘â–‘Filenamesâ–‘andâ–‘pathsâ–‘â–‘â–‘â–‘â–‘â•‘ . Define location of send and receive dirs.
+ â•‘ APNS control settings   â•‘
+ â•‘ Modem settings          â•‘
+ â•‘ Communications settings â•‘
+ â•‘ Undo all changes        â•‘
+ â•‘                         â•‘
+ â•™â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â•œ
 
  One of the most important aspects of the initial configuration is defining
  the location of the Apns inbound and outbound directories. As stated above,
@@ -209,49 +209,49 @@
 
  From the Setup Menu, select 'Filenames and Paths':
 
- ÖÄÄÄÄÄÄÄÄ´ File Setup ÃÄÄÄÄÄÄÄ·
- º                             º
- º Upload path  : C:\APNS\SEND º . Only the drive letter should change
- º Download path: C:\APNS\RECV º . Do not add a backslash (\) or filenames
- º                             º
- ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
+ â•“â”€â”€â”€â”€â”€â”€â”€â”€â”¤ File Setup â”œâ”€â”€â”€â”€â”€â”€â”€â•–
+ â•‘                             â•‘
+ â•‘ Upload path  : C:\APNS\SEND â•‘ . Only the drive letter should change
+ â•‘ Download path: C:\APNS\RECV â•‘ . Do not add a backslash (\) or filenames
+ â•‘                             â•‘
+ â•™â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â•œ
 
  When you have finished, press Escape to return to the Setup Menu.
 
- ÖÄÄÄÄÄÄÄÄ´ Setup ÃÄÄÄÄÄÄÄÄ·
- º                         º
- º Screen and colour       º
- º Filenames and paths     º
- º°APNS°control°settings°°°º . Control the way APNS operates
- º Modem settings          º
- º Communications settings º
- º Undo all changes        º
- º                         º
- ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
+ â•“â”€â”€â”€â”€â”€â”€â”€â”€â”¤ Setup â”œâ”€â”€â”€â”€â”€â”€â”€â”€â•–
+ â•‘                         â•‘
+ â•‘ Screen and colour       â•‘
+ â•‘ Filenames and paths     â•‘
+ â•‘â–‘APNSâ–‘controlâ–‘settingsâ–‘â–‘â–‘â•‘ . Control the way APNS operates
+ â•‘ Modem settings          â•‘
+ â•‘ Communications settings â•‘
+ â•‘ Undo all changes        â•‘
+ â•‘                         â•‘
+ â•™â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â•œ
 
  Returning to the Setup Menu, the 'APNS Control Settings' should be checked to
  ensure the defaults correspond to the manner in which the node will function:
 
  
- ÖÄÄÄÄÄÄÄÄÄ´ APNS Setup ÃÄÄÄÄÄÄÄÄÄÄ·
- º                                 º
- º Dial period in seconds    55    º . Seconds to wait for connect       
- º Inter-dial pause minutes  5     º . Minutes between dials to a node   
- º Maximum redials of a site 6     º . Max. redials of any one node      
- º Dial window start hour    23    º . APNS dial 'window' starts at 11pm 
- º Dial window finish hour   7     º . APNS dial 'window' ends at 7am    
- º Wait window start hour    23    º . APNS wait 'window' starts at 11pm 
- º Wait window finish hour   7     º . APNS wait 'window' ends at 7am    
- º Site identification code  MFOR  º . User cannot change this           
- º Connect delay in seconds  6     º . Modem handshaking delay in seconds
- º Exit after one call in    [ ]   º . Set to Yes if desired                   
- º RTC time can be reset     [X]   º . Whether other sites can alter time                                           
- º Difference from GMT / CET 0     º . Minutes between GMT and local time                                     
- º Dial action TIDYOUT.BAT %SITE   º . Run after successful call out
- º Wait action TIDYIN.BAT %SITE    º . Run after successful call in 
- º Password    ******              º . Security / ApConfig password      
- º                                 º
- ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
+ â•“â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤ APNS Setup â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â•–
+ â•‘                                 â•‘
+ â•‘ Dial period in seconds    55    â•‘ . Seconds to wait for connect       
+ â•‘ Inter-dial pause minutes  5     â•‘ . Minutes between dials to a node   
+ â•‘ Maximum redials of a site 6     â•‘ . Max. redials of any one node      
+ â•‘ Dial window start hour    23    â•‘ . APNS dial 'window' starts at 11pm 
+ â•‘ Dial window finish hour   7     â•‘ . APNS dial 'window' ends at 7am    
+ â•‘ Wait window start hour    23    â•‘ . APNS wait 'window' starts at 11pm 
+ â•‘ Wait window finish hour   7     â•‘ . APNS wait 'window' ends at 7am    
+ â•‘ Site identification code  MFOR  â•‘ . User cannot change this           
+ â•‘ Connect delay in seconds  6     â•‘ . Modem handshaking delay in seconds
+ â•‘ Exit after one call in    [ ]   â•‘ . Set to Yes if desired                   
+ â•‘ RTC time can be reset     [X]   â•‘ . Whether other sites can alter time                                           
+ â•‘ Difference from GMT / CET 0     â•‘ . Minutes between GMT and local time                                     
+ â•‘ Dial action TIDYOUT.BAT %SITE   â•‘ . Run after successful call out
+ â•‘ Wait action TIDYIN.BAT %SITE    â•‘ . Run after successful call in 
+ â•‘ Password    ******              â•‘ . Security / ApConfig password      
+ â•‘                                 â•‘
+ â•™â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â•œ
  
  
 The Inter-Dial Pause governs the minimum time between successive dials to 
@@ -276,30 +276,30 @@ can be overridden on the APNS command-line. For example:
  To continue with the configuration, press Escape to return to the Setup
  Menu.
 
- ÖÄÄÄÄÄÄÄÄ´ Setup ÃÄÄÄÄÄÄÄÄ·
- º                         º
- º Screen and colour       º
- º Filenames and paths     º
- º APNS control settings   º
- º°Modem°settings°°°°°°°°°°º . Select / modify your modem type
- º Communications settings º
- º Undo all changes        º
- º                         º
- ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
+ â•“â”€â”€â”€â”€â”€â”€â”€â”€â”¤ Setup â”œâ”€â”€â”€â”€â”€â”€â”€â”€â•–
+ â•‘                         â•‘
+ â•‘ Screen and colour       â•‘
+ â•‘ Filenames and paths     â•‘
+ â•‘ APNS control settings   â•‘
+ â•‘â–‘Modemâ–‘settingsâ–‘â–‘â–‘â–‘â–‘â–‘â–‘â–‘â–‘â–‘â•‘ . Select / modify your modem type
+ â•‘ Communications settings â•‘
+ â•‘ Undo all changes        â•‘
+ â•‘                         â•‘
+ â•™â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â•œ
 
  The Modem Setup option allows the user to pick a standard modem from the
  APNS Modem List, and / or modify a standard modem type to tailor the
  configuration to the particular modem.
 
- ÖÄÄÄÄÄÄÄÄÄ´ Modem Setup ÃÄÄÄÄÄÄÄÄÄ·
- º                                 º
- º Modem name  APNS Standard Modem º . User can pick from the Modem List
- º Initialise  ATZ|~~~AT&C1&D2|    º
- º Hang up     ~~~+++~~ATH0|       º . Then the individual strings can
- º Dial prefix ATDT                º   be modified
- º Answer call ATS0=1|             º
- º                                 º
- ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
+ â•“â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤ Modem Setup â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â•–
+ â•‘                                 â•‘
+ â•‘ Modem name  APNS Standard Modem â•‘ . User can pick from the Modem List
+ â•‘ Initialise  ATZ|~~~AT&C1&D2|    â•‘
+ â•‘ Hang up     ~~~+++~~ATH0|       â•‘ . Then the individual strings can
+ â•‘ Dial prefix ATDT                â•‘   be modified
+ â•‘ Answer call ATS0=1|             â•‘
+ â•‘                                 â•‘
+ â•™â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â•œ
 
  If you need to change any of the modem command strings for permanent use, 
  you should return to the main menu and select Modem List. You can then add 
@@ -309,31 +309,31 @@ can be overridden on the APNS command-line. For example:
  Again, once you have finished with this menu, press Escape to return to
  the Setup Menu.
 
- ÖÄÄÄÄÄÄÄÄ´ Setup ÃÄÄÄÄÄÄÄÄ·
- º                         º
- º Screen and colour       º
- º Filenames and paths     º
- º APNS control settings   º
- º Modem settings          º
- º°Communications°settings°º . Tell APNS about your COM port, speed etc
- º Undo all changes        º
- º                         º
- ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
+ â•“â”€â”€â”€â”€â”€â”€â”€â”€â”¤ Setup â”œâ”€â”€â”€â”€â”€â”€â”€â”€â•–
+ â•‘                         â•‘
+ â•‘ Screen and colour       â•‘
+ â•‘ Filenames and paths     â•‘
+ â•‘ APNS control settings   â•‘
+ â•‘ Modem settings          â•‘
+ â•‘â–‘Communicationsâ–‘settingsâ–‘â•‘ . Tell APNS about your COM port, speed etc
+ â•‘ Undo all changes        â•‘
+ â•‘                         â•‘
+ â•™â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â•œ
 
  From the Setup Menu again, 'Communications Settings' should be checked to
  ensure that the system is properly configured for your modem:
 
 
- ÖÄÄÄÄÄ´ Comms Setup ÃÄÄÄÄÄ·
- º                         º
- º Bits per second  19200  º . This is the maximum speed of your modem 
- º Comms Port No.  2       º . APNS supports IBM, ITT/Nokia, Kortex etc
- º COM 5 IO Base   0370    º . COM 5 is fully user-definable           
- º COM 5 IRQ line  3       º . The base I/O port address, IRQ and INT  
- º COM 5 INT No.   0       º . Can be modified for other serial ports  
- º Use FIFO buffer [X]     º . Activate 16550A FIFO buffer if present  
- º                         º
- ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
+ â•“â”€â”€â”€â”€â”€â”¤ Comms Setup â”œâ”€â”€â”€â”€â”€â•–
+ â•‘                         â•‘
+ â•‘ Bits per second  19200  â•‘ . This is the maximum speed of your modem 
+ â•‘ Comms Port No.  2       â•‘ . APNS supports IBM, ITT/Nokia, Kortex etc
+ â•‘ COM 5 IO Base   0370    â•‘ . COM 5 is fully user-definable           
+ â•‘ COM 5 IRQ line  3       â•‘ . The base I/O port address, IRQ and INT  
+ â•‘ COM 5 INT No.   0       â•‘ . Can be modified for other serial ports  
+ â•‘ Use FIFO buffer [X]     â•‘ . Activate 16550A FIFO buffer if present  
+ â•‘                         â•‘
+ â•™â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â•œ
  
  
 The two most important aspects of communications setups are the COM port
@@ -343,18 +343,18 @@ If your modem does not use the IBM / Hayes standards for COM Ports 1, 2, 3
 and 4, you should consult the following table:
 
 
-     ÕÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍÍÑÍÍÍÍÍÍÑÍÍÍÍÍÑÍÍÍÍÍ¸
-     ³ Software Port ³  Standard   ³    AKA    ³ Base ³ IRQ ³ INT ³
-     ÆÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍÍØÍÍÍÍÍØÍÍÍÍÍµ
-     ³     COM 1     ³ IBM / Hayes ³ COM 1 (I) ³ 3F8h ³  4  ³ 0Ch ³
-     ³     COM 2     ³ IBM / Hayes ³ COM 2 (I) ³ 2F8h ³  3  ³ 0Bh ³
-     ³     COM 3     ³ IBM / Hayes ³ COM 3 (I) ³ 3E8h ³  4  ³ 0Ch ³
-     ³     COM 4     ³ IBM / Hayes ³ COM 4 (I) ³ 2E8h ³  3  ³ 0Bh ³
-     ³     COM 5  *  ³ Kortex Int. ³ COM 3 (K) ³ 370h ³  4  ³ 0Ch ³
-     ³     COM 6     ³ Kortex Int. ³ COM 4 (K) ³ 270h ³  4  ³ 0Ch ³
-     ³     COM 7     ³ Nokia / ITT ³ COM 3 (N) ³ 3E8h ³  5  ³ 0Dh ³
-     ³     COM 8     ³ Nokia / ITT ³ COM 4 (N) ³ 3E8h ³  2  ³ 0Ah ³
-     ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÁÄÄÄÄÄÙ
+     â•’â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•¤â•â•â•â•â•â•â•â•â•â•â•â•â•â•¤â•â•â•â•â•â•â•â•â•â•â•â•¤â•â•â•â•â•â•â•¤â•â•â•â•â•â•¤â•â•â•â•â•â••
+     â”‚ Software Port â”‚  Standard   â”‚    AKA    â”‚ Base â”‚ IRQ â”‚ INT â”‚
+     â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•ªâ•â•â•â•â•â•â•â•â•â•â•â•â•â•ªâ•â•â•â•â•â•â•â•â•â•â•â•ªâ•â•â•â•â•â•â•ªâ•â•â•â•â•â•ªâ•â•â•â•â•â•¡
+     â”‚     COM 1     â”‚ IBM / Hayes â”‚ COM 1 (I) â”‚ 3F8h â”‚  4  â”‚ 0Ch â”‚
+     â”‚     COM 2     â”‚ IBM / Hayes â”‚ COM 2 (I) â”‚ 2F8h â”‚  3  â”‚ 0Bh â”‚
+     â”‚     COM 3     â”‚ IBM / Hayes â”‚ COM 3 (I) â”‚ 3E8h â”‚  4  â”‚ 0Ch â”‚
+     â”‚     COM 4     â”‚ IBM / Hayes â”‚ COM 4 (I) â”‚ 2E8h â”‚  3  â”‚ 0Bh â”‚
+     â”‚     COM 5  *  â”‚ Kortex Int. â”‚ COM 3 (K) â”‚ 370h â”‚  4  â”‚ 0Ch â”‚
+     â”‚     COM 6     â”‚ Kortex Int. â”‚ COM 4 (K) â”‚ 270h â”‚  4  â”‚ 0Ch â”‚
+     â”‚     COM 7     â”‚ Nokia / ITT â”‚ COM 3 (N) â”‚ 3E8h â”‚  5  â”‚ 0Dh â”‚
+     â”‚     COM 8     â”‚ Nokia / ITT â”‚ COM 4 (N) â”‚ 3E8h â”‚  2  â”‚ 0Ah â”‚
+     â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”˜
 
        
  The base I/O port address, IRQ (hardware Interrupt Request line) and
@@ -365,37 +365,37 @@ and 4, you should consult the following table:
  this display, press Escape to return to the Setup Menu, then Escape again
  to return to the ApConfig Main Menu.
 
- ÖÄ´ Main Menu ÃÄ·
- º               º
- º Configuration º
- º Node List     º
- º Scheduler     º
- º Modem List    º
- º°Com-Ports°°°°°º . Used to check the modem installation
- º               º
- ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
+ â•“â”€â”¤ Main Menu â”œâ”€â•–
+ â•‘               â•‘
+ â•‘ Configuration â•‘
+ â•‘ Node List     â•‘
+ â•‘ Scheduler     â•‘
+ â•‘ Modem List    â•‘
+ â•‘â–‘Com-Portsâ–‘â–‘â–‘â–‘â–‘â•‘ . Used to check the modem installation
+ â•‘               â•‘
+ â•™â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â•œ
 
  Selecting this option will result in a display like the following:
 
- ÖÄÄÄÄÄÄÄÄÄ´ Com-Ports ÃÄÄÄÄÄÄÄÄÄ·
- º                               º
- º      COM 1 is Installed       º . COM 1 was detected by the BIOS
- º      COM 2 is Installed       º . COM 2 was detected by the BIOS
- º      COM 3 was not found      º . COM 3 is not present or has a conflict
- º      COM 4 was not found      º . COM 4 is not present or has a conflict
- º      COM 5 was not found      º . COM 5 is the user definable COM port
- º      COM 6 was not found      º . COM 6 is not present or has a conflict
- º                               º
- º      Press any key (09)       º
- º                               º
- ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
+ â•“â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤ Com-Ports â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â•–
+ â•‘                               â•‘
+ â•‘      COM 1 is Installed       â•‘ . COM 1 was detected by the BIOS
+ â•‘      COM 2 is Installed       â•‘ . COM 2 was detected by the BIOS
+ â•‘      COM 3 was not found      â•‘ . COM 3 is not present or has a conflict
+ â•‘      COM 4 was not found      â•‘ . COM 4 is not present or has a conflict
+ â•‘      COM 5 was not found      â•‘ . COM 5 is the user definable COM port
+ â•‘      COM 6 was not found      â•‘ . COM 6 is not present or has a conflict
+ â•‘                               â•‘
+ â•‘      Press any key (09)       â•‘
+ â•‘                               â•‘
+ â•™â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â•œ
 
  The entry for COM 3 may also reflect COM ports 7 and 8 (ITT / Nokia
  standard) if they are present in the machine.
 
 
                                The Node List
-                               ÄÄÄÄÄÄÄÄÄÄÄÄÄ
+                               â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
  If the APNS software is to dial any nodes it must also be configured with
  the names, Node Identities and telephone numbers of the nodes that it must
@@ -404,28 +404,28 @@ and 4, you should consult the following table:
 
  From the ApConfig Main Menu, select 'Node List':
 
- ÖÄ´ Main Menu ÃÄ·
- º               º
- º Configuration º
- º°Node List°°°°°º . To manipulate nodes in the nodelist
- º Scheduler     º
- º Modem List    º
- º Com-Ports     º
- º               º
- ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
+ â•“â”€â”¤ Main Menu â”œâ”€â•–
+ â•‘               â•‘
+ â•‘ Configuration â•‘
+ â•‘â–‘Node Listâ–‘â–‘â–‘â–‘â–‘â•‘ . To manipulate nodes in the nodelist
+ â•‘ Scheduler     â•‘
+ â•‘ Modem List    â•‘
+ â•‘ Com-Ports     â•‘
+ â•‘               â•‘
+ â•™â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â•œ
 
  This will take you to the Node List Maintenance menu:
 
- ÖÄÄÄÄÄÄÄ´ Node List ÃÄÄÄÄÄÄÄÄ·
- º                            º
- º Add a new entry            º . Add a node to your dialling list
- º Edit an existing entry     º . Make changes to a node
- º Delete an existing entry   º . Permanently remove a node from the list
- º Make all nodes diallable   º . Reset all 'days failed' counters to 0
- º Make all nodes undiallable º . Set all 'days failed' counters to 8 days
- º Sort node list by name     º . Alphabetically sort the node list
- º                            º
- ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
+ â•“â”€â”€â”€â”€â”€â”€â”€â”¤ Node List â”œâ”€â”€â”€â”€â”€â”€â”€â”€â•–
+ â•‘                            â•‘
+ â•‘ Add a new entry            â•‘ . Add a node to your dialling list
+ â•‘ Edit an existing entry     â•‘ . Make changes to a node
+ â•‘ Delete an existing entry   â•‘ . Permanently remove a node from the list
+ â•‘ Make all nodes diallable   â•‘ . Reset all 'days failed' counters to 0
+ â•‘ Make all nodes undiallable â•‘ . Set all 'days failed' counters to 8 days
+ â•‘ Sort node list by name     â•‘ . Alphabetically sort the node list
+ â•‘                            â•‘
+ â•™â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â•œ
 
  All nodes have a 'days failed' counter. If for any reason APNS fails to
  connect to a node during a night, it will increment this flag for that
@@ -450,20 +450,20 @@ and 4, you should consult the following table:
  changes.
 
 
- ÖÄÄÄÄÄÄÄÄÄÄÄ´ Edit Node ÃÄÄÄÄÄÄÄÄÄÄÄ·
- º                                   º
- º Site Name    Belgian Head Office  º . This is for ease of Log readability            
- º Site Code    BEHQ                 º . As per remote site's APNS License              
- º Phone Number 010,32,321123456     º . The full telephone number of the node          
- º Modem Speed   19200               º . The maximum speed of the node's modem          
- º When to Dial Always               º . Always, When Sending or Never                  
- º Dial Session 1                    º . Node list can be split into sessions           
- º Dial Prefix  ATDT                 º . Use ATDP for pulse, ATDT for tone              
- º Update Clock [ ]                  º . Update their RTC from ours
- º Days Failed   0                   º . Press RETURN to reset this flag                
- º Last Status  Success              º . For information only                           
- º                                   º
- ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
+ â•“â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤ Edit Node â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â•–
+ â•‘                                   â•‘
+ â•‘ Site Name    Belgian Head Office  â•‘ . This is for ease of Log readability            
+ â•‘ Site Code    BEHQ                 â•‘ . As per remote site's APNS License              
+ â•‘ Phone Number 010,32,321123456     â•‘ . The full telephone number of the node          
+ â•‘ Modem Speed   19200               â•‘ . The maximum speed of the node's modem          
+ â•‘ When to Dial Always               â•‘ . Always, When Sending or Never                  
+ â•‘ Dial Session 1                    â•‘ . Node list can be split into sessions           
+ â•‘ Dial Prefix  ATDT                 â•‘ . Use ATDP for pulse, ATDT for tone              
+ â•‘ Update Clock [ ]                  â•‘ . Update their RTC from ours
+ â•‘ Days Failed   0                   â•‘ . Press RETURN to reset this flag                
+ â•‘ Last Status  Success              â•‘ . For information only                           
+ â•‘                                   â•‘
+ â•™â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â•œ
  
  
  The telephone number of the node's modem should include all necessary
@@ -501,7 +501,7 @@ and 4, you should consult the following table:
 
 
                             The Event Scheduler List
-                            ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+                            â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
  The Schedule file is a method of exerting control over a series of actions,
  known within the system as 'Events'.
@@ -519,69 +519,69 @@ and 4, you should consult the following table:
  'Scheduler' from the main menu:
 
 
- ÖÄ´ Main Menu ÃÄ·
- º               º
- º Configuration º
- º Node List     º
- º°Scheduler°°°°°º . To manipulate the schedule file
- º Modem List    º
- º Com-Ports     º
- º               º
- ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
+ â•“â”€â”¤ Main Menu â”œâ”€â•–
+ â•‘               â•‘
+ â•‘ Configuration â•‘
+ â•‘ Node List     â•‘
+ â•‘â–‘Schedulerâ–‘â–‘â–‘â–‘â–‘â•‘ . To manipulate the schedule file
+ â•‘ Modem List    â•‘
+ â•‘ Com-Ports     â•‘
+ â•‘               â•‘
+ â•™â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â•œ
 
  This will take you to the Scheduler Maintenance Menu.
 
- ÖÄ´ Scheduler ÃÄ·
- º               º
- º Add Event     º . Add a new event to the end of the event list
- º Delete Event  º . Remove an event from the event list
- º Edit Event    º . Make changes to an event
- º Sort Events   º . Sort events alphabetically by priority
- º Next Event    º . Manually choose the next event to be run
- º               º
- ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
+ â•“â”€â”¤ Scheduler â”œâ”€â•–
+ â•‘               â•‘
+ â•‘ Add Event     â•‘ . Add a new event to the end of the event list
+ â•‘ Delete Event  â•‘ . Remove an event from the event list
+ â•‘ Edit Event    â•‘ . Make changes to an event
+ â•‘ Sort Events   â•‘ . Sort events alphabetically by priority
+ â•‘ Next Event    â•‘ . Manually choose the next event to be run
+ â•‘               â•‘
+ â•™â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â•œ
 
  The entry screens used to Add and Edit events are almost identical.
  One is shown below:
 
- ÖÄÄ´ Add Event ÃÄÄ·
- º                 º
- º Event Name :    º 
- º DOS Command:    º 
- º Priority   :    º 
- º Sunday ..... No º 
- º Monday ..... No º 
- º Tuesday .... No º 
- º Wednesday .. No º 
- º Thursday ... No º 
- º Friday ..... No º 
- º Saturday ... No º 
- º Once a day : No º 
- º Week Number: 0  º 
- º Country    : 0  º 
- º Date active:    º 
- º                 º
- ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
+ â•“â”€â”€â”¤ Add Event â”œâ”€â”€â•–
+ â•‘                 â•‘
+ â•‘ Event Name :    â•‘ 
+ â•‘ DOS Command:    â•‘ 
+ â•‘ Priority   :    â•‘ 
+ â•‘ Sunday ..... No â•‘ 
+ â•‘ Monday ..... No â•‘ 
+ â•‘ Tuesday .... No â•‘ 
+ â•‘ Wednesday .. No â•‘ 
+ â•‘ Thursday ... No â•‘ 
+ â•‘ Friday ..... No â•‘ 
+ â•‘ Saturday ... No â•‘ 
+ â•‘ Once a day : No â•‘ 
+ â•‘ Week Number: 0  â•‘ 
+ â•‘ Country    : 0  â•‘ 
+ â•‘ Date active:    â•‘ 
+ â•‘                 â•‘
+ â•™â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â•œ
 
- ÖÄÄÄÄÄÄÄ´ Edit Event ÃÄÄÄÄÄÄÄ·
- º                            º
- º Event Name  Garage Expert  º . This is for ease of Log file readability           
- º DOS Command GE2            º . The required DOS command (.COM, .EXE or .BAT)      
- º Priority    AAAA           º . Four character alphanumeric priority
- º Sunday      [ ]            º . If event can run on a Sunday                       
- º Monday      [X]            º . If event can run on a Monday                       
- º Tuesday     [X]            º . If event can run on a Tuesday                      
- º Wednesday   [X]            º . If event can run on a Wednesday                    
- º Thursday    [X]            º . If event can run on a Thursday                     
- º Friday      [X]            º . If event can run on a Friday                       
- º Saturday    [X]            º . If event can run on a Saturday                     
- º Once a day  [ ]            º . If event should only run once on any date          
- º Holidays    [ ]            º . If event should run on holidays as well
- º Week Number 0              º . If event runs only in a certain week number   
- º Country     0              º . If event runs only in a certain country       
- º Date active                º . If event runs on a date or range of dates
- º                            º
- ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
+ â•“â”€â”€â”€â”€â”€â”€â”€â”¤ Edit Event â”œâ”€â”€â”€â”€â”€â”€â”€â•–
+ â•‘                            â•‘
+ â•‘ Event Name  Garage Expert  â•‘ . This is for ease of Log file readability           
+ â•‘ DOS Command GE2            â•‘ . The required DOS command (.COM, .EXE or .BAT)      
+ â•‘ Priority    AAAA           â•‘ . Four character alphanumeric priority
+ â•‘ Sunday      [ ]            â•‘ . If event can run on a Sunday                       
+ â•‘ Monday      [X]            â•‘ . If event can run on a Monday                       
+ â•‘ Tuesday     [X]            â•‘ . If event can run on a Tuesday                      
+ â•‘ Wednesday   [X]            â•‘ . If event can run on a Wednesday                    
+ â•‘ Thursday    [X]            â•‘ . If event can run on a Thursday                     
+ â•‘ Friday      [X]            â•‘ . If event can run on a Friday                       
+ â•‘ Saturday    [X]            â•‘ . If event can run on a Saturday                     
+ â•‘ Once a day  [ ]            â•‘ . If event should only run once on any date          
+ â•‘ Holidays    [ ]            â•‘ . If event should run on holidays as well
+ â•‘ Week Number 0              â•‘ . If event runs only in a certain week number   
+ â•‘ Country     0              â•‘ . If event runs only in a certain country       
+ â•‘ Date active                â•‘ . If event runs on a date or range of dates
+ â•‘                            â•‘
+ â•™â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â•œ
  
  The entry for the DOS command required to start the event (this could be
  a .COM or .EXE executable program or a .BAT batch file), can also include
@@ -596,15 +596,15 @@ and 4, you should consult the following table:
  particular country. The codes used are the International Direct Dial codes,
  the same as those used in the COUNTRY= line in CONFIG.SYS. For example:
 
-                           ÕÍÍÍÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍ¸
-                           ³ Country ³ IDD Code ³
-                           ÆÍÍÍÍÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍµ
-                           ³ Belgium ³    32    ³
-                           ³ France  ³    33    ³
-                           ³ Spain   ³    34    ³
-                           ³ Austria ³    43    ³
-                           ³ Britain ³    44    ³
-                           ÀÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÙ
+                           â•’â•â•â•â•â•â•â•â•â•â•¤â•â•â•â•â•â•â•â•â•â•â••
+                           â”‚ Country â”‚ IDD Code â”‚
+                           â•â•â•â•â•â•â•â•â•â•â•ªâ•â•â•â•â•â•â•â•â•â•â•¡
+                           â”‚ Belgium â”‚    32    â”‚
+                           â”‚ France  â”‚    33    â”‚
+                           â”‚ Spain   â”‚    34    â”‚
+                           â”‚ Austria â”‚    43    â”‚
+                           â”‚ Britain â”‚    44    â”‚
+                           â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 
  If the Country field is 0, then the event can operate in any country.
 
@@ -677,78 +677,78 @@ and 4, you should consult the following table:
  01/01/93
 
                               The APNS Modem List
-                              ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+                              â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
  To enter Modem List Maintenance, select Modem List from the Main Menu:
 
- ÖÄ´ Main Menu ÃÄ·
- º               º
- º Configuration º
- º Node List     º
- º Scheduler     º
- º°Modem List°°°°º . To maintain the APNS Modem List
- º Com-Ports     º
- º               º
- ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
+ â•“â”€â”¤ Main Menu â”œâ”€â•–
+ â•‘               â•‘
+ â•‘ Configuration â•‘
+ â•‘ Node List     â•‘
+ â•‘ Scheduler     â•‘
+ â•‘â–‘Modem Listâ–‘â–‘â–‘â–‘â•‘ . To maintain the APNS Modem List
+ â•‘ Com-Ports     â•‘
+ â•‘               â•‘
+ â•™â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â•œ
 
 This will take you to the Modem List Maintenance Menu, it follows a similar
 form to the Node-List and Schedule Maintenance Menus:
 
- ÖÄÄ´ Modems ÃÄÄ·
- º              º
- º Add Modem    º . Add a new modem to the APNS Modem List
- º Edit Modem   º . Make changes to a modem in the Modem List
- º Delete Modem º . Permanently delete a modem from the Modem List
- º Sort List    º . Alphabetically sort the Modem List
- º Import Text  º . Import a text version of the Modem List
- º Output Text  º . Create a text version of the Modem List
- º              º
- ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
+ â•“â”€â”€â”¤ Modems â”œâ”€â”€â•–
+ â•‘              â•‘
+ â•‘ Add Modem    â•‘ . Add a new modem to the APNS Modem List
+ â•‘ Edit Modem   â•‘ . Make changes to a modem in the Modem List
+ â•‘ Delete Modem â•‘ . Permanently delete a modem from the Modem List
+ â•‘ Sort List    â•‘ . Alphabetically sort the Modem List
+ â•‘ Import Text  â•‘ . Import a text version of the Modem List
+ â•‘ Output Text  â•‘ . Create a text version of the Modem List
+ â•‘              â•‘
+ â•™â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â•œ
 
  The options to Edit or Delete a Modem will display the Modem List and allow
  you to choose a modem from it:
 
- ÖÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´ Edit ÃÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ·
- º                                             º
- º°°°°°°°°°°°°°°°°APNS°Standard°°°°°°°°°°°°°°°°º
- º         AST Premium Exec Modem 2400         º
- º        AT&T Paradyne COMSPHERE 3800         º
- º        AT&T V32F-V42L Modem Chipset         º
- º        AT&T V32x-V42D Modem Chipset         º
- º             Accex External 9600             º
- º               Codex 2264/2266               º
- º             CompuCom Champ MKII             º
- º               CompuCom Combo                º
- º             CompuCom Combo MKII             º
- º            Dallas Fax 14.4 Nova             º
- º          Dallas Fax 14.4 Pro Plus           º
- º          Dallas Fax 2496 External           º
- º          Dallas Fax 2496 Internal           º
- º          Dallas Fax 2496V External          º
- º          Dallas Fax 2496V Internal          º
- º           Dallas Fax 2496V Pocket           º
- º            Dallas Fax 9696 Nova             º
- º                                             º
- ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
+ â•“â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤ Edit â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â•–
+ â•‘                                             â•‘
+ â•‘â–‘â–‘â–‘â–‘â–‘â–‘â–‘â–‘â–‘â–‘â–‘â–‘â–‘â–‘â–‘â–‘APNSâ–‘Standardâ–‘â–‘â–‘â–‘â–‘â–‘â–‘â–‘â–‘â–‘â–‘â–‘â–‘â–‘â–‘â–‘â•‘
+ â•‘         AST Premium Exec Modem 2400         â•‘
+ â•‘        AT&T Paradyne COMSPHERE 3800         â•‘
+ â•‘        AT&T V32F-V42L Modem Chipset         â•‘
+ â•‘        AT&T V32x-V42D Modem Chipset         â•‘
+ â•‘             Accex External 9600             â•‘
+ â•‘               Codex 2264/2266               â•‘
+ â•‘             CompuCom Champ MKII             â•‘
+ â•‘               CompuCom Combo                â•‘
+ â•‘             CompuCom Combo MKII             â•‘
+ â•‘            Dallas Fax 14.4 Nova             â•‘
+ â•‘          Dallas Fax 14.4 Pro Plus           â•‘
+ â•‘          Dallas Fax 2496 External           â•‘
+ â•‘          Dallas Fax 2496 Internal           â•‘
+ â•‘          Dallas Fax 2496V External          â•‘
+ â•‘          Dallas Fax 2496V Internal          â•‘
+ â•‘           Dallas Fax 2496V Pocket           â•‘
+ â•‘            Dallas Fax 9696 Nova             â•‘
+ â•‘                                             â•‘
+ â•™â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â•œ
 
  The Modem Entry window is used when you either Add or Edit a modem:
 
- ÖÄÄÄÄÄÄÄÄÄ´ Edit Modem ÃÄÄÄÄÄÄÄÄÄ·
- º                                º
- º APNS Modem Type: APNS Standard º . Descriptive name for this modem-type
- º Initialisation : ATZ|~~~AT&C1| º . Modem initialisation string
- º Dial prefix    : ATDT          º . Modem dialling prefix
- º Auto-Answer On : ATS0=1|       º . Modem command to enable auto-answer
- º Hang up connect: ATH0|         º . Modem command to hang-up the modem
- º                                º
- ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
+ â•“â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤ Edit Modem â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â•–
+ â•‘                                â•‘
+ â•‘ APNS Modem Type: APNS Standard â•‘ . Descriptive name for this modem-type
+ â•‘ Initialisation : ATZ|~~~AT&C1| â•‘ . Modem initialisation string
+ â•‘ Dial prefix    : ATDT          â•‘ . Modem dialling prefix
+ â•‘ Auto-Answer On : ATS0=1|       â•‘ . Modem command to enable auto-answer
+ â•‘ Hang up connect: ATH0|         â•‘ . Modem command to hang-up the modem
+ â•‘                                â•‘
+ â•™â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â•œ
 
  The options to import and export textual versions of the APNS Modem List
  are for use when the Modem List has to be updated from modifications made
  out at site.
 
                                  File Transfer
-                                 ÄÄÄÄÄÄÄÄÄÄÄÄÄ
+                                 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
  Files sent and received by APNS must be named according to the following
  convention:
@@ -822,7 +822,7 @@ form to the Node-List and Schedule Maintenance Menus:
 
     
                        Operation Of APNS (Dialling Mode)
-                       ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+                       â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
  To start the system, after the system has been setup then it is a simple
  matter to change to the \APNS directory and then to the following DOS command
@@ -905,7 +905,7 @@ form to the Node-List and Schedule Maintenance Menus:
 
 
                       Operation Of APNS (Waiting Mode)
-                      ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+                      â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
  To start the system in Waiting for a Call mode, change into the \APNS
  directory and type:
@@ -927,7 +927,7 @@ form to the Node-List and Schedule Maintenance Menus:
 
 
                                   Security
-                                  ÄÄÄÄÄÄÄÄ
+                                  â”€â”€â”€â”€â”€â”€â”€â”€
 
  The security of the system is based around the two copies of APNS
  exchanging handshake information. The handshake packets contain a master
@@ -956,7 +956,7 @@ form to the Node-List and Schedule Maintenance Menus:
 
 
                             File Management (ApFile)
-                            ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+                            â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
  The APNS File Manager (ApFile) screen display is split into two windows.
  The first shows a list of all the sub-directories of the current directory
@@ -964,30 +964,30 @@ form to the Node-List and Schedule Maintenance Menus:
 
  The second window shows help for the function keys used within ApFile.
 
- 14/10/1992 ³ ApFile, APNS File Manager version 2.15                  20:58:45
- ÖÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´ C:\APNS ÃÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ·ÖÄÄÄ´ Function Key Guide ÃÄÄÄ·
- º                                             ºº                            º
- ºÿ ..           ÄÄ DIR ÄÄ 09/10/1992 18:33:24 ºº Return selects file or dir º
- ºÿ RECV         ÄÄ DIR ÄÄ 09/10/1992 18:33:28 ºº                            º
- ºÿ SEND         ÄÄ DIR ÄÄ 09/10/1992 18:33:26 ºº   F1 to Route the file     º
- º  APCONFIG.EXE     26488 13/10/1992 10:54:32 ºº   F2 to Route to -ALL      º
- º  APCONFIG.HLP      4126 10/10/1992 02:15:00 ºº   F3 to Send  to -ALL      º
- º  APDELAY .EXE      7796 10/10/1992 02:15:00 ºº   F4 to Sort by Name       º
- º  APFILE  .EXE     15752 10/10/1992 02:15:00 ºº   F5 to Sort by Extension  º
- º°°APNS°°°°.CFG°°°°°°1024°14/10/1992°17:56:32°ºº   F6 to Sort by Date       º
- º  APNS    .EXE     26304 14/10/1992 20:55:12 ºº   F7 to Sort by Size       º
- º  APNS    .FON      1536 10/10/1992 02:15:00 ºº   F8 for an Unsorted list  º
- º  APNS    .LOG      1395 14/10/1992 20:55:30 ºº                            º
- º  APNS    .MOD     22755 10/10/1992 02:15:00 ºº   + / - to Tag / Untag     º
- º  APNS    .SCH      2304 10/10/1992 02:15:00 ºº                            º
- º  APNSENG1.CFG      1024 10/10/1992 02:15:00 ºº                            º
- º  APNSLIN1.CFG      1024 10/10/1992 02:15:00 ºº                            º
- º  APNSPOL1.CFG      1024 10/10/1992 02:15:00 ºº                            º
- º  APNSVIE1.CFG      1024 10/10/1992 02:15:00 ºº                            º
- º  APNSVIE2.CFG      1024 10/10/1992 02:15:00 ºº                            º
- º  APSCHED .BAT        49 10/10/1992 02:15:00 ºº                            º
- º                                             ºº                            º
- ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
+ 14/10/1992 â”‚ ApFile, APNS File Manager version 2.15                  20:58:45
+ â•“â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤ C:\APNS â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â•–â•“â”€â”€â”€â”¤ Function Key Guide â”œâ”€â”€â”€â•–
+ â•‘                                             â•‘â•‘                            â•‘
+ â•‘Â  ..           â”€â”€ DIR â”€â”€ 09/10/1992 18:33:24 â•‘â•‘ Return selects file or dir â•‘
+ â•‘Â  RECV         â”€â”€ DIR â”€â”€ 09/10/1992 18:33:28 â•‘â•‘                            â•‘
+ â•‘Â  SEND         â”€â”€ DIR â”€â”€ 09/10/1992 18:33:26 â•‘â•‘   F1 to Route the file     â•‘
+ â•‘  APCONFIG.EXE     26488 13/10/1992 10:54:32 â•‘â•‘   F2 to Route to -ALL      â•‘
+ â•‘  APCONFIG.HLP      4126 10/10/1992 02:15:00 â•‘â•‘   F3 to Send  to -ALL      â•‘
+ â•‘  APDELAY .EXE      7796 10/10/1992 02:15:00 â•‘â•‘   F4 to Sort by Name       â•‘
+ â•‘  APFILE  .EXE     15752 10/10/1992 02:15:00 â•‘â•‘   F5 to Sort by Extension  â•‘
+ â•‘â–‘â–‘APNSâ–‘â–‘â–‘â–‘.CFGâ–‘â–‘â–‘â–‘â–‘â–‘1024â–‘14/10/1992â–‘17:56:32â–‘â•‘â•‘   F6 to Sort by Date       â•‘
+ â•‘  APNS    .EXE     26304 14/10/1992 20:55:12 â•‘â•‘   F7 to Sort by Size       â•‘
+ â•‘  APNS    .FON      1536 10/10/1992 02:15:00 â•‘â•‘   F8 for an Unsorted list  â•‘
+ â•‘  APNS    .LOG      1395 14/10/1992 20:55:30 â•‘â•‘                            â•‘
+ â•‘  APNS    .MOD     22755 10/10/1992 02:15:00 â•‘â•‘   + / - to Tag / Untag     â•‘
+ â•‘  APNS    .SCH      2304 10/10/1992 02:15:00 â•‘â•‘                            â•‘
+ â•‘  APNSENG1.CFG      1024 10/10/1992 02:15:00 â•‘â•‘                            â•‘
+ â•‘  APNSLIN1.CFG      1024 10/10/1992 02:15:00 â•‘â•‘                            â•‘
+ â•‘  APNSPOL1.CFG      1024 10/10/1992 02:15:00 â•‘â•‘                            â•‘
+ â•‘  APNSVIE1.CFG      1024 10/10/1992 02:15:00 â•‘â•‘                            â•‘
+ â•‘  APNSVIE2.CFG      1024 10/10/1992 02:15:00 â•‘â•‘                            â•‘
+ â•‘  APSCHED .BAT        49 10/10/1992 02:15:00 â•‘â•‘                            â•‘
+ â•‘                                             â•‘â•‘                            â•‘
+ â•™â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â•œâ•™â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â•œ
  Use Up, Down, PageUp, PageDown, Home, End and A..Z to choose
 
 
@@ -1031,13 +1031,13 @@ form to the Node-List and Schedule Maintenance Menus:
 
 
                                    Appendix A
-                                   ÄÄÄÄÄÄÄÄÄÄ
+                                   â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
                           Additional Support Utilities
-                          ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+                          â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
                                     ApDelay
-                                    ÄÄÄÄÄÄÄ
+                                    â”€â”€â”€â”€â”€â”€â”€
 
  ApDelay is used to bridge the gap between the end of a normal day's activity
  at a site and the start of the APNS Answer Window. Normally, APNS would be
@@ -1050,10 +1050,10 @@ form to the Node-List and Schedule Maintenance Menus:
 
 
                                    Appendix B
-                                   ÄÄÄÄÄÄÄÄÄÄ
+                                   â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
                    The File Transfer Protocol Implementation
-                   ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+                   â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
  The file-transfer protocol Xmodem was created by Ward Christensen in 1981. It
  was simpler to implement, more reliable and faster than other methods being
@@ -1105,3 +1105,4 @@ form to the Node-List and Schedule Maintenance Menus:
  modems that do have MNP, V42Bis etc.
 
                                       END
+
